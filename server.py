@@ -12,21 +12,23 @@ topic_pub='v1/devices/me/telemetry'
 mqtt_broker_ip = "srv-iot.diatel.upm.es"
 client = mqtt.Client(protocol=mqtt.MQTTv311, transport="tcp")
 
+client2 = mqtt.Client(protocol=mqtt.MQTTv311, transport="tcp")
+forward=False
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    #client.subscribe("$SYS/#")
+    client.subscribe(topic_pub)
     #client.subscribe(mqtt_topic)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     print("NEW MSG"+msg.topic+" "+str(msg.payload.decode('UTF-8')))
-    if(str(msg.payload.decode('UTF-8'))=="Button pressed!"):
-        pass
-        #client.publish("test", "python_received", qos=0, retain=False)
+    global forward
+    forward=True
 
 def on_disconnect(client, userdata, rc):
     if rc != 0:
@@ -40,12 +42,24 @@ if __name__ == "__main__":
         client.on_message = on_message
         client.on_disconnect = on_disconnect
         client.loop_start()
+
+        client2.connect("127.0.0.1", 1883, 60)
+        client2.subscribe("server", 0)
+        client2.on_message = on_message
+        client2.loop_start()
         while True:
             for i in range(5):
-                x = random.randrange(20, 100)
+                x = random.randrange(0, 50)
                 print(x)
                 msg = "{\"temperature\":"+str(x)+"}"
                 client.publish(topic_pub, msg)
+                if forward:
+                    time.sleep(5)
+                    x = 200
+                    print(x)
+                    msg = "{\"temperature\":"+str(x)+"}"
+                    client.publish(topic_pub, msg)
+                    forward=False
                 time.sleep(5)
     except KeyboardInterrupt:
         pass
