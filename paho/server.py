@@ -22,11 +22,13 @@ def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     client.subscribe(topic_pub)
-    #client.subscribe(mqtt_topic)
+    client.subscribe('v1/devices/me/attributes')
+    client.subscribe('v1/devices/me/attributes/response/+')
+    client.subscribe('v1/devices/me/rpc/request/+')
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    print("NEW MSG"+msg.topic+" "+str(msg.payload.decode('UTF-8')))
+    print("NEW MSG -> "+msg.topic+" "+str(msg.payload.decode('UTF-8')))
     global forward
     forward=True
 
@@ -47,6 +49,12 @@ if __name__ == "__main__":
         client2.subscribe("server", 0)
         client2.on_message = on_message
         client2.loop_start()
+        for i in range(4):
+            x = 0
+            print(x)
+            msg = "{\"temperature\":"+str(x)+"}"
+            client.publish(topic_pub, msg)
+            time.sleep(1)
         while True:
             for i in range(5):
                 x = random.randrange(0, 50)
