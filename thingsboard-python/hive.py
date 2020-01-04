@@ -33,7 +33,6 @@ def on_disconnect(client, userdata, rc):
 
 if __name__ == "__main__":
     try:
-        client.username_pw_set("IU8rjHe8MCyu0A0oqk7S", password=None)
         client.connect(mqtt_broker_ip, 1883, 60)
         client.on_connect = on_connect
         client.on_message = on_message

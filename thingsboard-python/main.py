@@ -4,26 +4,26 @@ import sys
 import random
 import json
 import threading
+from numbers import Number
 ## Libraries for thingsboard communication management
 from tb_device_mqtt import TBDeviceMqttClient, TBPublishInfo
 ## Libraries for hive sensors management as mqtt gateway
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
-#logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.INFO)
 
-
-## Thinsgboard vad def
+## Thinsgboard var def
 server_address = "srv-iot.diatel.upm.es"
 values_TB_keys=["avtemperatureIn","avtemperatureOut","avhumidityIn","avhumidityOut","avweigth0","avweigth1","avweigth2","avX","avY","avZ","avC02"]
+notif_TB_keys={"avalertTempIn":"avtemperatureIn","avalertTempOut":"avtemperatureOut","avalertHumIn":"avhumidityIn","avalertHumOut":"avhumidityOut","avC02_alert":"avC02"}
 msg_to_TB_hist = {
-    1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0}},
-            "notifications":{0:{"ts": 0,"alert_temp":"","alert_hum":"","weigth0": "ok","weigth1": "ok","weigth2": "ok","accel_alert":"","C02_alert":""}}},
-    2:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avweigth3": 0,"avweigth4": 0,"avweigth4": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0}},
-            "notifications":{0:{"ts": 0,"alert_temp":"","alert_hum":"","weigth0": "ok","weigth1": "ok","weigth2": "ok","accel_alert":"","C02_alert":""}}},
-    3:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avweigth3": 0,"avweigth4": 0,"avweigth4": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0}},
-            "notifications":{0:{"ts": 0,"alert_temp":"","alert_hum":"","weigth0": "ok","weigth1": "ok","weigth2": "ok","accel_alert":"","C02_alert":""}}}
+    1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"C02_alert":0}}},
+    2:{"values":{0:{"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"C02_alert":0}}},
+    3:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"C02_alert":0}}},
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
@@ -44,12 +44,12 @@ hivegt = mqtt.Client(protocol=mqtt.MQTTv311, transport="tcp")
 mosquitto_broker = "127.0.0.1"
 values_hive_keys=["temperatureIn","temperatureOut","humidityIn","humidityOut","weigth0","weigth1","weigth2","X","Y","Z","C02"]
 msg_from_hive_hist = {
-    1:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0}},
-        "notifications":{0:{"ts": 0,"alert_temp":"","alert_hum":"","weigth0": "ok","weigth1": "ok","weigth2": "ok","accel_alert":"","C02_alert":""}}},
-    2:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0}},
-        "notifications":{0:{"ts": 0,"alert_temp":"","alert_hum":"","weigth0": "ok","weigth1": "ok","weigth2": "ok","accel_alert":"","C02_alert":""}}},
-    3:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0}},
-        "notifications":{0:{"ts": 0,"alert_temp":"","alert_hum":"","weigth0": "ok","weigth1": "ok","weigth2": "ok","accel_alert":"","C02_alert":""}}}
+    1:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"C02_alert":0}}},
+    2:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"C02_alert":0}}},
+    3:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"C02_alert":0}}},
     }
 value_hive={1:0,2:0,3:0}
 notif_hive={1:0,2:0,3:0}
@@ -75,9 +75,21 @@ def on_message(client, userdata, msg):
     global value_hive
     if "hive/1" in msg.topic:
         #print("hive1")
-        if msg.topic == "hive/1/alert":
-            pass
-        elif msg.topic == "hive/1/telemetry":
+        if "/alert" in msg.topic:
+            if "/acc" in msg.topic:
+                attributes = {"status": 1}
+                result = device1.send_attributes(attributes)
+            if "/movement" in msg.topic:
+                attributes = {"status": 1}
+                result = device1.send_attributes(attributes)
+                alert=msg_dict
+                alert.update({"ts": time.time()})
+                device1.send_telemetry(alert)
+            msg_from_hive_hist[1]["notifications"][value_hive[1]]={}
+            msg_from_hive_hist[1]["notifications"][value_hive[1]]["ts"]=time.time()
+            msg_from_hive_hist[1]["notifications"][value_hive[1]].update(msg_dict)
+            notif_hive[1] +=1
+        elif "/telemetry" in msg.topic:
             #print("telemetry from hive1 -> "+str(value_hive[1]))
             msg_from_hive_hist[1]["values"][value_hive[1]]={}
             msg_from_hive_hist[1]["values"][value_hive[1]]["ts"]=time.time()
@@ -86,9 +98,21 @@ def on_message(client, userdata, msg):
             value_hive[1] +=1
     if "hive/2" in msg.topic:
         #print("hive2")
-        if msg.topic == "hive/2/alert":
-            pass
-        elif msg.topic == "hive/2/telemetry":
+        if "/alert" in msg.topic:
+            if "/acc" in msg.topic:
+                attributes = {"status": 1}
+                result = device2.send_attributes(attributes)
+            if "/movement" in msg.topic:
+                attributes = {"status": 1}
+                result = device2.send_attributes(attributes)
+                alert=msg_dict
+                alert.update({"ts": time.time()})
+                device2.send_telemetry(alert)
+            msg_from_hive_hist[2]["notifications"][value_hive[2]]={}
+            msg_from_hive_hist[2]["notifications"][value_hive[2]]["ts"]=time.time()
+            msg_from_hive_hist[2]["notifications"][value_hive[2]].update(msg_dict)
+            notif_hive[2] +=1
+        elif "/telemetry" in msg.topic:
             #print("telemetry from hive2 -> "+str(value_hive[2]))
             msg_from_hive_hist[2]["values"][value_hive[2]]={}
             msg_from_hive_hist[2]["values"][value_hive[2]]["ts"]=time.time()
@@ -97,9 +121,21 @@ def on_message(client, userdata, msg):
             value_hive[2] +=1
     if "hive/3" in msg.topic:
         #print("hive3")
-        if msg.topic == "hive/3/alert":
-            pass
-        elif msg.topic == "hive/3/telemetry":
+        if "/alert" in msg.topic:
+            if "/acc" in msg.topic:
+                attributes = {"status": 1}
+                result = device3.send_attributes(attributes)
+            if "/movement" in msg.topic:
+                attributes = {"status": 1}
+                result = device3.send_attributes(attributes)
+                alert=msg_dict
+                alert.update({"ts": time.time()})
+                device1.send_telemetry(alert)
+            msg_from_hive_hist[3]["notifications"][value_hive[3]]={}
+            msg_from_hive_hist[3]["notifications"][value_hive[3]]["ts"]=time.time()
+            msg_from_hive_hist[3]["notifications"][value_hive[3]].update(msg_dict)
+            notif_hive[3] +=1
+        elif "/telemetry" in msg.topic:
             #print("telemetry from hive3 -> "+str(value_hive[3]))
             msg_from_hive_hist[3]["values"][value_hive[3]]={}
             msg_from_hive_hist[3]["values"][value_hive[3]]["ts"]=time.time()
@@ -127,14 +163,81 @@ def calculate_avg(key,time_frame,ts,hive):
     for i in range(value_hive[hive]-1,-1,-1):
         if(msg_from_hive_hist[hive]["values"][i]["ts"])<(ts-time_frame):
             break
-        result+=msg_from_hive_hist[hive]["values"][i][key]
-        #print("i="+str(i)+" "+json.dumps(msg_from_hive_hist[hive]["values"][i]["ts"])+" "+json.dumps(msg_from_hive_hist[1]["values"][i][key]))
-        ns+=1
+        if key in msg_from_hive_hist[hive]["values"][i].keys():
+            result+=msg_from_hive_hist[hive]["values"][i][key]
+            ns+=1
+            #print("i="+str(i)+" "+json.dumps(msg_from_hive_hist[hive]["values"][i]["ts"])+" "+json.dumps(msg_from_hive_hist[1]["values"][i][key]))
     #print("key "+key+" ns "+str(ns)+" r "+str(result))
     if(ns>0):
         return result/ns
     else:
-        return 0
+        return
+
+
+def check_avgs(hive):
+    avg_alerts={}
+    if(value_TB[hive]>0):
+        for notif_key in notif_TB_keys.keys():
+            avg_tot=0
+            navg=0
+            for i in range(1,4):
+                print("+++++hive"+str(i)+" value_TB"+str(value_TB[i])+" avkey "+notif_key+" key "+notif_TB_keys[notif_key]+"+++++")
+                #print(json.dumps(msg_to_TB_hist[i]["values"][1][notif_TB_keys[notif_key]]))
+                #print(value_TB[i] in msg_to_TB_hist[i]["values"]and notif_TB_keys[notif_key] in msg_to_TB_hist[i]["values"][value_TB[i]].keys())
+                if value_TB[i] in msg_to_TB_hist[i]["values"] and notif_TB_keys[notif_key] in msg_to_TB_hist[i]["values"][value_TB[i]].keys():
+                    print(json.dumps(msg_to_TB_hist[i]["values"][value_TB[i]]))
+                    if isinstance(msg_to_TB_hist[i]["values"][value_TB[i]][notif_TB_keys[notif_key]],Number):
+                        navg += 1
+                        avg_tot += msg_to_TB_hist[i]["values"][value_TB[i]][notif_TB_keys[notif_key]]
+            if navg != 0:
+                avg_tot /= navg
+            print("+++ avg"+notif_key+str(avg_tot)+" +++")
+            if notif_TB_keys[notif_key] in msg_to_TB_hist[hive]["values"][value_TB[hive]].keys():
+                print("ok")
+                if not isinstance(msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]],Number):
+                    print("no samples")
+                    avg_alerts.update({notif_key:-1})
+                elif msg_to_TB_hist[hive]["values"][value_TB[hive]] and avg_tot*1.2 < msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]]:
+                    avg_alerts.update({notif_key:2})
+                elif msg_to_TB_hist[hive]["values"][value_TB[hive]] and avg_tot*0.8 > msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]]:
+                    avg_alerts.update({notif_key:1})
+            print()
+    if len(avg_alerts)>0:
+        print("ok1\n\n")
+        return avg_alerts
+    else:
+        print("ok2\n\n")
+        return
+
+def getHiveNotif(time_frame,ts,hive):
+    notifs={}
+    for i in range(notif_hive[hive]-1,-1,-1):
+        if(msg_from_hive_hist[hive]["notifications"][i]["ts"])<(ts-time_frame):
+            break
+        print(i)
+        notifs.update(msg_from_hive_hist[hive]["notifications"][i])
+    return notifs
+
+def getLatLng(time_frame,ts,hive):
+    lat=0
+    nlat=0
+    resultlat=0
+    lng=0
+    nlng=0
+    resultlng=0
+    for i in range(value_hive[hive]-1,-1,-1):
+        if(msg_from_hive_hist[hive]["values"][i]["ts"])<(ts-time_frame):
+            break
+        if "lat" in msg_from_hive_hist[hive]["values"][i].keys():
+            resultlat+=msg_from_hive_hist[hive]["values"][i]["lat"]
+            nlat+=1
+        if "lng" in msg_from_hive_hist[hive]["values"][i].keys():
+            resultlng+=msg_from_hive_hist[hive]["values"][i]["lng"]
+            nlng+=1
+    if nlat != 0 and nlng != 0:
+        return {"lat":resultlat/nlat,"lng":resultlng/nlng}
+    else:
+        return
 
 def publish_avg(time_frame):
     ts=time.time()
@@ -146,15 +249,52 @@ def publish_avg(time_frame):
         msg_to_TB_hist[i]["values"][value_TB[i]]["ts"]=ts
         msg_to_TB_hist[i]["values"][value_TB[i]]["nsamples"]=calculate_ns(time_frame,ts,i)
         while key_ind < len(values_TB_keys):
-            msg_to_TB_hist[i]["values"][value_TB[i]][values_TB_keys[key_ind]]=calculate_avg(values_hive_keys[key_ind],time_frame,ts,i)
-            print("hive"+str(i)+" valuesTB "+str(value_TB[i])+" values_TB_key "+values_TB_keys[key_ind]+" value "+json.dumps(msg_to_TB_hist[i]["values"][value_TB[i]][values_TB_keys[key_ind]]))
+            avg=calculate_avg(values_hive_keys[key_ind],time_frame,ts,i)
+            if avg != None:
+                msg_to_TB_hist[i]["values"][value_TB[i]][values_TB_keys[key_ind]]=avg
+                print("hive"+str(i)+" valuesTB "+str(value_TB[i])+" values_TB_key "+values_TB_keys[key_ind]+" value "+json.dumps(msg_to_TB_hist[i]["values"][value_TB[i]][values_TB_keys[key_ind]]))
+            else:
+                msg_to_TB_hist[i]["values"][value_TB[i]][values_TB_keys[key_ind]]=""
             key_ind += 1
         if i == 1:
-            device1.send_telemetry(msg_to_TB_hist[i]["values"][value_TB[i]])
+            location = getLatLng(time_frame,ts,i)
+            avg_alerts = check_avgs(i)
+            if location != None:
+                msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
+                print("Lat Lng")
+            msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
+            if avg_alerts != None:
+                msg_to_TB_hist[i]["values"][notif_TB[i]].update(avg_alerts)
+                msg_send.update(avg_alerts)
+            msg_send.update(getHiveNotif(time_frame,ts,i))
+            print(json.dumps(msg_send))
+            device1.send_telemetry(msg_send)
         elif i== 2:
-            device2.send_telemetry(msg_to_TB_hist[i]["values"][value_TB[i]])
+            location = getLatLng(time_frame,ts,i)
+            avg_alerts = check_avgs(i)
+            if location != None:
+                msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
+                print("Lat Lng")
+            msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
+            if avg_alerts != None:
+                msg_to_TB_hist[i]["values"][notif_TB[i]].update(avg_alerts)
+                msg_send.update(avg_alerts)
+            msg_send.update(getHiveNotif(time_frame,ts,i))
+            print(json.dumps(msg_send))
+            device1.send_telemetry(msg_send)
         elif i== 3:
-            device3.send_telemetry(msg_to_TB_hist[i]["values"][value_TB[i]])
+            location = getLatLng(time_frame,ts,i)
+            avg_alerts = check_avgs(i)
+            if location != None:
+                msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
+                print("Lat Lng")
+            msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
+            if avg_alerts != None:
+                msg_to_TB_hist[i]["values"][notif_TB[i]].update(avg_alerts)
+                msg_send.update(avg_alerts)
+            msg_send.update(getHiveNotif(time_frame,ts,i))
+            print(json.dumps(msg_send))
+            device1.send_telemetry(msg_send)
         print()
     #print(json.dumps(msg_to_TB_hist[1]["values"][value_TB[1]]))
     #device1.send_telemetry(msg_to_TB_hist[1]["values"][value_TB[1]])
@@ -172,7 +312,7 @@ if __name__ == "__main__":
     try:
         start_hive_gt()
         TB_connect_all()
-        periodic_avg(60)
+        periodic_avg(15)
         while True:
             time.sleep(10)
     except KeyboardInterrupt:
