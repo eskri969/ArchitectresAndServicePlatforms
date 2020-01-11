@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 ## Thinsgboard var def
 server_address = "srv-iot.diatel.upm.es"
 values_TB_keys=["avtemperatureIn","avtemperatureOut","avhumidityIn","avhumidityOut","avweigth0","avweigth1","avweigth2","avX","avY","avZ","avC02"]
-notif_TB_keys={"avalertTempIn":"avtemperatureIn","avalertTempOut":"avtemperatureOut","avalertHumIn":"avhumidityIn","avalertHumOut":"avhumidityOut","avC02_alert":"avC02"}
+notif_TB_keys={"statusTempIn":"avtemperatureIn","statusTempOut":"avtemperatureOut","statusHumIn":"avhumidityIn","statusHumOut":"avhumidityOut","statusC02":"avC02"}
 msg_to_TB_hist = {
     1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0,"lat": 0,"lng":0}},
             "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"C02_alert":0}}},
@@ -253,6 +253,15 @@ def calculate_avg(key,time_frame,ts,hive):
 
 def check_avgs(hive):
     avg_alerts={}
+    if hive==1:
+        device=device1
+    elif hive==2:
+        device=device2
+    elif hive==3:
+        device=device3
+    else:
+        print("wrong hive number")
+        return
     if(value_TB[hive]>0):
         for notif_key in notif_TB_keys.keys():
             avg_tot=0
@@ -272,18 +281,28 @@ def check_avgs(hive):
             if notif_TB_keys[notif_key] in msg_to_TB_hist[hive]["values"][value_TB[hive]].keys():
                 if not isinstance(msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]],Number):
                     #print("no samples")
-                    avg_alerts.update({notif_key:-1})
+                    #avg_alerts.update({notif_key:-1})
+                    attributes = {notif_key: -1}
+                    result = device.send_attributes(attributes)
+                    print("anomaly for "+notif_key+" in deviec "+str(i)+" val= -1")
                 elif msg_to_TB_hist[hive]["values"][value_TB[hive]] and avg_tot*1.2 < msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]]:
-                    avg_alerts.update({notif_key:2})
+                    #avg_alerts.update({notif_key:2})
+                    attributes = {notif_key: 2}
+                    result = device.send_attributes(attributes)
+                    print("anomaly for "+notif_key+" in deviec "+str(i)+" val= 2")
                 elif msg_to_TB_hist[hive]["values"][value_TB[hive]] and avg_tot*0.8 > msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]]:
-                    avg_alerts.update({notif_key:1})
-            #print()
+                    #avg_alerts.update({notif_key:1})
+                    attributes = {notif_key: 1}
+                    result = device.send_attributes(attributes)
+                    print("anomaly for "+notif_key+" in deviec "+str(i)+" val= 1")
+    '''
     if len(avg_alerts)>0:
         #print("ok1\n\n")
         return avg_alerts
     else:
         #print("ok2\n\n")
         return
+    '''
 '''
 def getHiveNotif(time_frame,ts,hive):
     notifs={}
@@ -358,7 +377,7 @@ def publish_avg(time_frame):
                 msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE2 SENDING\n"+json.dumps(msg_send))
-            device1.send_telemetry(msg_send)
+            device2.send_telemetry(msg_send)
         elif i== 3:
             location = getLatLng(time_frame,ts,i)
             avg_alerts = check_avgs(i)
@@ -371,7 +390,7 @@ def publish_avg(time_frame):
                 msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE3 SENDING\n"+json.dumps(msg_send))
-            device1.send_telemetry(msg_send)
+            device3.send_telemetry(msg_send)
         #print()
     #print(json.dumps(msg_to_TB_hist[1]["values"][value_TB[1]]))
     #device1.send_telemetry(msg_to_TB_hist[1]["values"][value_TB[1]])
