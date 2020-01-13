@@ -15,15 +15,16 @@ logging.basicConfig(level=logging.INFO)
 
 ## Thinsgboard var def
 server_address = "srv-iot.diatel.upm.es"
-values_TB_keys=["avtemperatureIn","avtemperatureOut","avhumidityIn","avhumidityOut","avweigth0","avweigth1","avweigth2","avX","avY","avZ","avC02"]
-notif_TB_keys={"statusTempIn":"avtemperatureIn","statusTempOut":"avtemperatureOut","statusHumIn":"avhumidityIn","statusHumOut":"avhumidityOut","statusC02":"avC02"}
+sensor_critic_keys={}
+values_TB_keys=["avtemperatureIn","avtemperatureOut","avhumidityIn","avhumidityOut","avweigth0","avweigth1","avweigth2","avX","avY","avZ","avCO2"]
+notif_TB_keys={"statusTempIn":"avtemperatureIn","statusTempOut":"avtemperatureOut","statusHumIn":"avhumidityIn","statusHumOut":"avhumidityOut","statusCO2":"avCO2"}
 msg_to_TB_hist = {
-    1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"C02_alert":0}}},
-    2:{"values":{0:{"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"C02_alert":0}}},
-    3:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avC02": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"C02_alert":0}}},
+    1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
+    2:{"values":{0:{"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
+    3:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
@@ -42,14 +43,15 @@ def TB_connect_all():
 ## Hive gateway def
 hivegt = mqtt.Client(protocol=mqtt.MQTTv311, transport="tcp")
 mosquitto_broker = "127.0.0.1"
-values_hive_keys=["temperatureIn","temperatureOut","humidityIn","humidityOut","weigth0","weigth1","weigth2","X","Y","Z","C02"]
+clear_hive_att={"criticTempIn":0,"criticTempOut":0,"criticHumIn":0,"criticHumOut":0,"criticCo2":0}
+values_hive_keys=["temperatureIn","temperatureOut","humidityIn","humidityOut","weigth0","weigth1","weigth2","X","Y","Z","CO2"]
 msg_from_hive_hist = {
-    1:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"C02_alert":0}}},
-    2:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"C02_alert":0}}},
-    3:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"C02": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"C02_alert":0}}},
+    1:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"CO2_alert":0}}},
+    2:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"CO2_alert":0}}},
+    3:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"CO2_alert":0}}},
     }
 value_hive={1:0,2:0,3:0}
 notif_hive={1:0,2:0,3:0}
@@ -79,37 +81,37 @@ def on_message(client, userdata, msg):
             if "/tempIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempIn": 2}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticTempIn": 1}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
             elif "/humIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticHumIn": 2}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticHumIn": 1}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
             elif "/co2" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticCo2": 2}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticCo2": 1}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
             elif "/tempOut" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempOut": 2}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticTempOut": 1}
-                    result = device1.send_attributes(attributes)
+                    device1.send_attributes(attributes)
             elif "/fall" in msg.topic:
                 attributes = {"statusFall": 1}
-                result = device1.send_attributes(attributes)
+                device1.send_attributes(attributes)
             elif "/move" in msg.topic:
                 attributes = {"statusMove": 1}
-                result = device1.send_attributes(attributes)
+                device1.send_attributes(attributes)
             msg_from_hive_hist[1]["notifications"][value_hive[1]]={}
             msg_from_hive_hist[1]["notifications"][value_hive[1]]["ts"]=time.time()
             msg_from_hive_hist[1]["notifications"][value_hive[1]].update(msg_dict)
@@ -128,37 +130,37 @@ def on_message(client, userdata, msg):
             if "/tempIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempIn": 2}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticTempIn": 1}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
             elif "/humIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticHumIn": 2}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticHumIn": 1}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
             elif "/co2" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticCo2": 2}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticCo2": 1}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
             elif "/tempOut" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempOut": 2}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticTempOut": 1}
-                    result = device2.send_attributes(attributes)
+                    device2.send_attributes(attributes)
             elif "/fall" in msg.topic:
                 attributes = {"statusFall": 1}
-                result = device2.send_attributes(attributes)
+                device2.send_attributes(attributes)
             elif "/move" in msg.topic:
                 attributes = {"statusMove": 1}
-                result = device2.send_attributes(attributes)
+                device2.send_attributes(attributes)
             msg_from_hive_hist[2]["notifications"][value_hive[2]]={}
             msg_from_hive_hist[2]["notifications"][value_hive[2]]["ts"]=time.time()
             msg_from_hive_hist[2]["notifications"][value_hive[2]].update(msg_dict)
@@ -177,37 +179,37 @@ def on_message(client, userdata, msg):
             if "/tempIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempIn": 2}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticTempIn": 1}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
             elif "/humIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticHumIn": 2}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticHumIn": 1}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
             elif "/co2" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticCo2": 2}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticCo2": 1}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
             elif "/tempOut" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempOut": 2}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
                 elif "/min" in msg.topic:
                     attributes = {"criticTempOut": 1}
-                    result = device3.send_attributes(attributes)
+                    device3.send_attributes(attributes)
             elif "/fall" in msg.topic:
                 attributes = {"statusFall": 1}
-                result = device3.send_attributes(attributes)
+                device3.send_attributes(attributes)
             elif "/move" in msg.topic:
                 attributes = {"statusMove": 1}
-                result = device3.send_attributes(attributes)
+                device3.send_attributes(attributes)
             msg_from_hive_hist[3]["notifications"][value_hive[3]]={}
             msg_from_hive_hist[3]["notifications"][value_hive[3]]["ts"]=time.time()
             msg_from_hive_hist[3]["notifications"][value_hive[3]].update(msg_dict)
@@ -280,21 +282,26 @@ def check_avgs(hive):
             #print("+++ avg"+notif_key+str(avg_tot)+" +++")
             if notif_TB_keys[notif_key] in msg_to_TB_hist[hive]["values"][value_TB[hive]].keys():
                 if not isinstance(msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]],Number):
-                    #print("no samples")
                     #avg_alerts.update({notif_key:-1})
                     attributes = {notif_key: -1}
-                    result = device.send_attributes(attributes)
+                    #device.send_attributes(attributes)
                     print("anomaly for "+notif_key+" in deviec "+str(i)+" val= -1")
                 elif msg_to_TB_hist[hive]["values"][value_TB[hive]] and avg_tot*1.2 < msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]]:
                     #avg_alerts.update({notif_key:2})
                     attributes = {notif_key: 2}
-                    result = device.send_attributes(attributes)
+                    #device.send_attributes(attributes)
                     print("anomaly for "+notif_key+" in deviec "+str(i)+" val= 2")
                 elif msg_to_TB_hist[hive]["values"][value_TB[hive]] and avg_tot*0.8 > msg_to_TB_hist[hive]["values"][value_TB[hive]][notif_TB_keys[notif_key]]:
                     #avg_alerts.update({notif_key:1})
                     attributes = {notif_key: 1}
-                    result = device.send_attributes(attributes)
+                    #device.send_attributes(attributes)
                     print("anomaly for "+notif_key+" in deviec "+str(i)+" val= 1")
+                else:
+                    attributes = {notif_key: 0}
+                avg_alerts.update(attributes)
+        print("Sending for hive"+str(i)+" "+json.dumps(avg_alerts))
+        device.send_attributes(avg_alerts)
+
     '''
     if len(avg_alerts)>0:
         #print("ok1\n\n")
@@ -364,6 +371,7 @@ def publish_avg(time_frame):
                 msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE1 SENDING\n"+json.dumps(msg_send))
+            device1.send_attributes(clear_hive_att)
             device1.send_telemetry(msg_send)
         elif i== 2:
             location = getLatLng(time_frame,ts,i)
@@ -377,6 +385,7 @@ def publish_avg(time_frame):
                 msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE2 SENDING\n"+json.dumps(msg_send))
+            device2.send_attributes(clear_hive_att)
             device2.send_telemetry(msg_send)
         elif i== 3:
             location = getLatLng(time_frame,ts,i)
@@ -390,6 +399,7 @@ def publish_avg(time_frame):
                 msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE3 SENDING\n"+json.dumps(msg_send))
+            device3.send_attributes(clear_hive_att)
             device3.send_telemetry(msg_send)
         #print()
     #print(json.dumps(msg_to_TB_hist[1]["values"][value_TB[1]]))
@@ -410,7 +420,7 @@ if __name__ == "__main__":
         start_hive_gt()
         TB_connect_all()
         print("all Connected")
-        periodic_avg(30)
+        periodic_avg(120)
         while True:
             time.sleep(10)
     except KeyboardInterrupt:

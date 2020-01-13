@@ -39,17 +39,17 @@ if __name__ == "__main__":
         client.on_disconnect = on_disconnect
         client.loop_start()
         i=0
-        temperatureIn=0
-        temperatureOut=0
-        humidityIn=0
-        humidityOut=0
-        weigth0=0
-        weigth1=0
-        weigth2=0
-        X=0
-        Y=0
-        Z=0
-        C02=0
+        temperatureIn=1
+        temperatureOut=10
+        humidityIn=20
+        humidityOut=30
+        weigth0=40
+        weigth1=50
+        weigth2=60
+        X=70
+        Y=80
+        Z=90
+        CO2=100
         print("init")
         while True:
             i+=1
@@ -57,14 +57,17 @@ if __name__ == "__main__":
             temperatureOut+=1
             humidityIn+=1
             humidityOut+=1
-            weigth0+=1
-            weigth1+=1
-            weigth2+=1
+            #weigth0+=1
+            #weigth1+=1
+            #weigth2+=1
+            weigth0=25
+            weigth1=25
+            weigth2=25
             X+=1
             Y+=1
             Z+=1
-            C02+=1
-            msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureIn)+",\"humidityIn\":"+str(temperatureIn)+",\"humidityOut\":"+str(temperatureIn)+",\"weigth0\":"+str(temperatureIn)+",\"weigth1\":"+str(temperatureIn)+",\"weigth2\":"+str(temperatureIn)+",\"X\":"+str(temperatureIn)+",\"Y\":"+str(temperatureIn)+",\"Z\":"+str(temperatureIn)+",\"C02\":"+str(temperatureIn)+"}"
+            CO2+=1
+            msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureOut)+",\"humidityIn\":"+str(humidityIn)+",\"humidityOut\":"+str(humidityOut)+",\"weigth0\":"+str(weigth0)+",\"weigth1\":"+str(weigth1)+",\"weigth2\":"+str(weigth2)+",\"X\":"+str(X)+",\"Y\":"+str(Y)+",\"Z\":"+str(Z)+",\"CO2\":"+str(CO2)+"}"
             print("send"+str(i))
             client.publish(topic_pub1, msg)
             client.publish(topic_pub2, msg)
