@@ -405,7 +405,7 @@ def set_hive_sampling_period(hive,period):
     print("hive"+str(hive)+" "+str(period))
     hivegt.publish("hive/"+str(hive)+"/setSamplingPeriod",period)
 
-def set_gt_sampling_period(hive,period):
+def set_gt_sampling_period(period):
     global gatewaySamplingPeriod
     gatewaySamplingPeriod=float(period)
     print("GtPeriod "+str(gatewaySamplingPeriod))
@@ -428,9 +428,19 @@ def on_server_side_rpc_request(request_id, request_body):
         print("***************setSamplingPeriodA****************")
         sampling_period_hive_request[1]=request_body["params"]
         set_hive_sampling_period(1,request_body["params"])
+    elif request_body["method"] == "setSamplingPeriodB":
+        global sampling_period_hive_request
+        print("***************setSamplingPeriodB****************")
+        sampling_period_hive_request[2]=request_body["params"]
+        set_hive_sampling_period(2,request_body["params"])
+    elif request_body["method"] == "setSamplingPeriodC":
+        global sampling_period_hive_request
+        print("***************setSamplingPeriodC****************")
+        sampling_period_hive_request[3]=request_body["params"]
+        set_hive_sampling_period(3,request_body["params"])
     elif request_body["method"] == "setSamplingPeriodGt":
         print("***************setSamplingPeriodGt****************")
-        set_gt_sampling_period(1,request_body["params"])
+        set_gt_sampling_period(request_body["params"])
 
 ## Main initialization and thread
 if __name__ == "__main__":
