@@ -29,7 +29,7 @@ msg_to_TB_hist = {
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
-gatewaySamplingPeriod=10.0
+gatewaySamplingPeriod=100.0
 
 ## Thinsgboard devices def
 device1 = TBDeviceMqttClient(server_address, "IU8rjHe8MCyu0A0oqk7S")
@@ -38,8 +38,11 @@ device3 = TBDeviceMqttClient(server_address, "PN9ZCENmB0jvEc8WHMyX")
 
 # Thingsboard device functions
 def TB_connect_all():
+    device1.set_server_side_rpc_request_handler(on_server_side_rpc_request)
     device1.connect()
+    device2.set_server_side_rpc_request_handler(on_server_side_rpc_request)
     device2.connect()
+    device3.set_server_side_rpc_request_handler(on_server_side_rpc_request)
     device3.connect()
 
 ## Hive gateway def
@@ -74,7 +77,9 @@ def start_hive_gt():
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
-    hivegt.subscribe("hive/#")
+    #hivegt.subscribe("hive/#")
+    hivegt.subscribe("hive/+/alert")
+    hivegt.subscribe("hive/+/telemetry")
 
 def on_message(client, userdata, msg):
     print("NEW MSG -> "+msg.topic+" "+str(msg.payload.decode('UTF-8')))
@@ -399,14 +404,22 @@ def periodic_avg():
     #timer = threading.Timer(gatewaySamplingPeriod, periodic_avg)
     #timer.start()
 '''
+def set_hive_indicator_light(hive,light):
+    print("hive"+str(hive)+" lightIndicator "+str(light))
+    hivegt.publish("hive/"+str(hive)+"/setIndicatorLight",light)
 
-def set_hive_sampling_period(hive,period):
-    print("hive"+str(hive)+" "+str(period))
-    sampling_period_hive_request = float(period)
-    threading.Timer(10, publish_hive_sampling_period,args=(hive,period,)).start()
+def set_hive_indicator_weigth(hive,weight):
+    print("hive"+str(hive)+" weightIndicator "+str(weight))
+    hivegt.publish("hive/"+str(hive)+"/setWeightIndicatorA",weight)
 
-def publish_hive_sampling_period(hive,period):
-    if sampling_period_hive_request[hive] == period:
+def set_hive_sampling_period(hive,period,req):
+    global sampling_period_hive_request
+    sampling_period_hive_request[hive] = int(req)
+    threading.Timer(10, publish_hive_sampling_period,args=(hive,period,req)).start()
+
+def publish_hive_sampling_period(hive,period,req):
+    if int(sampling_period_hive_request[hive]) == int(req):
+        sampling_period_hive[hive]=period
         print("Sampling Period for Hive"+str(hive)+" = "+str(period))
         hivegt.publish("hive/"+str(hive)+"/setSamplingPeriod",period)
 
@@ -415,11 +428,10 @@ def set_gt_sampling_period(period):
     gatewaySamplingPeriod=float(period)
     print("GtPeriod "+str(gatewaySamplingPeriod))
 
-
 # dependently of request method we send different data back
 def on_server_side_rpc_request(request_id, request_body):
-    print(request_body)
     global sampling_period_hive_request
+    #print(request_body)
     if request_body["method"] == "helloWorld":
         print("***************hello****************")
         print(request_body)
@@ -432,24 +444,37 @@ def on_server_side_rpc_request(request_id, request_body):
     elif request_body["method"] == "setSamplingPeriodA":
         print("***************setSamplingPeriodA****************")
         sampling_period_hive_request[1]=request_body["params"]
-        set_hive_sampling_period(1,request_body["params"])
+        set_hive_sampling_period(1,request_body["params"],request_id)
     elif request_body["method"] == "setSamplingPeriodB":
         print("***************setSamplingPeriodB****************")
         sampling_period_hive_request[2]=request_body["params"]
-        set_hive_sampling_period(2,request_body["params"])
+        set_hive_sampling_period(2,request_body["params"],request_i)
     elif request_body["method"] == "setSamplingPeriodC":
         print("***************setSamplingPeriodC****************")
         sampling_period_hive_request[3]=request_body["params"]
-        set_hive_sampling_period(3,request_body["params"])
+        set_hive_sampling_period(3,request_body["params"],request_i)
     elif request_body["method"] == "setSamplingPeriodGt":
         print("***************setSamplingPeriodGt****************")
         set_gt_sampling_period(request_body["params"])
+    elif request_body["method"] == "setLightIndicatorA":
+        print("***************setLightIndicatorA****************")
+        set_hive_indicator_light(1,request_body["params"])
+    elif request_body["method"] == "setLightIndicatorB":
+        print("***************setLightIndicatorB****************")
+        set_hive_indicator_light(2,request_body["params"])
+    elif request_body["method"] == "setLightIndicatorC":
+        print("***************setLightIndicatorc****************")
+        set_hive_indicator_light(3,request_body["params"])
+    elif request_body["method"] == "setWeightIndicatorA":
+        print("***************setWeightIndicatorA****************")
+        set_hive_indicator_weigth(1,request_body["params"])
+    else:
+        print(request_body)
 
 ## Main initialization and thread
 if __name__ == "__main__":
     try:
         start_hive_gt()
-        device1.set_server_side_rpc_request_handler(on_server_side_rpc_request)
         TB_connect_all()
         print("all Connected")
         while True:
