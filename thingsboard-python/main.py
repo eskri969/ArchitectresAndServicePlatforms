@@ -392,18 +392,23 @@ def publish_avg(time_frame):
     for i in range(1,4):
         value_TB[i]+=1
 
-
+'''
 def periodic_avg():
     global gatewaySamplingPeriod
-    print(datetime.datetime.now())
-    print(gatewaySamplingPeriod)
     publish_avg(gatewaySamplingPeriod)
     #timer = threading.Timer(gatewaySamplingPeriod, periodic_avg)
     #timer.start()
+'''
 
 def set_hive_sampling_period(hive,period):
     print("hive"+str(hive)+" "+str(period))
-    hivegt.publish("hive/"+str(hive)+"/setSamplingPeriod",period)
+    sampling_period_hive_request = float(period)
+    threading.Timer(10, publish_hive_sampling_period,args=(hive,period,)).start()
+
+def publish_hive_sampling_period(hive,period):
+    if sampling_period_hive_request[hive] == period:
+        print("Sampling Period for Hive"+str(hive)+" = "+str(period))
+        hivegt.publish("hive/"+str(hive)+"/setSamplingPeriod",period)
 
 def set_gt_sampling_period(period):
     global gatewaySamplingPeriod
@@ -414,6 +419,7 @@ def set_gt_sampling_period(period):
 # dependently of request method we send different data back
 def on_server_side_rpc_request(request_id, request_body):
     print(request_body)
+    global sampling_period_hive_request
     if request_body["method"] == "helloWorld":
         print("***************hello****************")
         print(request_body)
@@ -424,17 +430,14 @@ def on_server_side_rpc_request(request_id, request_body):
         print("***************getSamplingPeriodAnswer****************")
         device1.send_rpc_reply(request_id, {"params": 0})
     elif request_body["method"] == "setSamplingPeriodA":
-        global sampling_period_hive_request
         print("***************setSamplingPeriodA****************")
         sampling_period_hive_request[1]=request_body["params"]
         set_hive_sampling_period(1,request_body["params"])
     elif request_body["method"] == "setSamplingPeriodB":
-        global sampling_period_hive_request
         print("***************setSamplingPeriodB****************")
         sampling_period_hive_request[2]=request_body["params"]
         set_hive_sampling_period(2,request_body["params"])
     elif request_body["method"] == "setSamplingPeriodC":
-        global sampling_period_hive_request
         print("***************setSamplingPeriodC****************")
         sampling_period_hive_request[3]=request_body["params"]
         set_hive_sampling_period(3,request_body["params"])
