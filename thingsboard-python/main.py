@@ -5,6 +5,7 @@ import random
 import json
 import threading
 from numbers import Number
+import datetime
 ## Libraries for thingsboard communication management
 from tb_device_mqtt import TBDeviceMqttClient, TBPublishInfo
 ## Libraries for hive sensors management as mqtt gateway
@@ -28,6 +29,7 @@ msg_to_TB_hist = {
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
+gatewaySamplingPeriod=10.0
 
 ## Thinsgboard devices def
 device1 = TBDeviceMqttClient(server_address, "IU8rjHe8MCyu0A0oqk7S")
@@ -55,6 +57,9 @@ msg_from_hive_hist = {
     }
 value_hive={1:0,2:0,3:0}
 notif_hive={1:0,2:0,3:0}
+sampling_period_hive={1:120,2:120,3:120}
+sampling_period_hive_request={1:0,2:0,3:0}
+
 
 # Hivegt functions
 def stop_hivegt():
@@ -301,15 +306,6 @@ def check_avgs(hive):
                 avg_alerts.update(attributes)
         print("Sending for hive"+str(i)+" "+json.dumps(avg_alerts))
         device.send_attributes(avg_alerts)
-
-    '''
-    if len(avg_alerts)>0:
-        #print("ok1\n\n")
-        return avg_alerts
-    else:
-        #print("ok2\n\n")
-        return
-    '''
 '''
 def getHiveNotif(time_frame,ts,hive):
     notifs={}
@@ -361,42 +357,30 @@ def publish_avg(time_frame):
             key_ind += 1
         if i == 1:
             location = getLatLng(time_frame,ts,i)
-            avg_alerts = check_avgs(i)
+            check_avgs(i)
             if location != None:
                 msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
-                #print("Lat Lng")
             msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
-            if avg_alerts != None:
-                msg_to_TB_hist[i]["values"][notif_TB[i]].update(avg_alerts)
-                msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE1 SENDING\n"+json.dumps(msg_send))
             device1.send_attributes(clear_hive_att)
             device1.send_telemetry(msg_send)
         elif i== 2:
             location = getLatLng(time_frame,ts,i)
-            avg_alerts = check_avgs(i)
+            check_avgs(i)
             if location != None:
                 msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
-                #print("Lat Lng")
             msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
-            if avg_alerts != None:
-                msg_to_TB_hist[i]["values"][notif_TB[i]].update(avg_alerts)
-                msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE2 SENDING\n"+json.dumps(msg_send))
             device2.send_attributes(clear_hive_att)
             device2.send_telemetry(msg_send)
         elif i== 3:
             location = getLatLng(time_frame,ts,i)
-            avg_alerts = check_avgs(i)
+            check_avgs(i)
             if location != None:
                 msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
-                #print("Lat Lng")
             msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
-            if avg_alerts != None:
-                msg_to_TB_hist[i]["values"][notif_TB[i]].update(avg_alerts)
-                msg_send.update(avg_alerts)
             #msg_send.update(getHiveNotif(time_frame,ts,i))
             print("DEVICE3 SENDING\n"+json.dumps(msg_send))
             device3.send_attributes(clear_hive_att)
@@ -409,22 +393,61 @@ def publish_avg(time_frame):
         value_TB[i]+=1
 
 
-def periodic_avg(time_frame):
-    publish_avg(time_frame)
-    timer = threading.Timer(time_frame, periodic_avg, args=(time_frame,))
-    timer.start()
+def periodic_avg():
+    global gatewaySamplingPeriod
+    print(datetime.datetime.now())
+    print(gatewaySamplingPeriod)
+    publish_avg(gatewaySamplingPeriod)
+    #timer = threading.Timer(gatewaySamplingPeriod, periodic_avg)
+    #timer.start()
+
+def set_hive_sampling_period(hive,period):
+    print("hive"+str(hive)+" "+str(period))
+    hivegt.publish("hive/"+str(hive)+"/setSamplingPeriod",period)
+
+def set_gt_sampling_period(hive,period):
+    global gatewaySamplingPeriod
+    gatewaySamplingPeriod=float(period)
+    print("GtPeriod "+str(gatewaySamplingPeriod))
+
+
+# dependently of request method we send different data back
+def on_server_side_rpc_request(request_id, request_body):
+    print(request_body)
+    if request_body["method"] == "helloWorld":
+        print("***************hello****************")
+        print(request_body)
+    elif request_body["method"] == "getValue":
+        print("***************getValue****************")
+        device1.send_rpc_reply(request_id, {"params": 0})
+    elif request_body["method"] == "getSamplingPeriodAnswer":
+        print("***************getSamplingPeriodAnswer****************")
+        device1.send_rpc_reply(request_id, {"params": 0})
+    elif request_body["method"] == "setSamplingPeriodA":
+        global sampling_period_hive_request
+        print("***************setSamplingPeriodA****************")
+        sampling_period_hive_request[1]=request_body["params"]
+        set_hive_sampling_period(1,request_body["params"])
+    elif request_body["method"] == "setSamplingPeriodGt":
+        print("***************setSamplingPeriodGt****************")
+        set_gt_sampling_period(1,request_body["params"])
 
 ## Main initialization and thread
 if __name__ == "__main__":
     try:
         start_hive_gt()
+        device1.set_server_side_rpc_request_handler(on_server_side_rpc_request)
         TB_connect_all()
         print("all Connected")
-        periodic_avg(120)
         while True:
-            time.sleep(10)
+            print("PERIOD DONE -> "+str(datetime.datetime.now()))
+            publish_avg(gatewaySamplingPeriod)
+            print("NEXT IN -> "+str(gatewaySamplingPeriod))
+            time.sleep(gatewaySamplingPeriod)
     except KeyboardInterrupt:
         pass
+    except Exception as e:
+        print(e)
     finally:
         hivegt.loop_stop(force=False)
         sys.exit(0)

@@ -53,6 +53,7 @@ if __name__ == "__main__":
         print("init")
         while True:
             i+=1
+            '''
             temperatureIn+=1
             temperatureOut+=1
             humidityIn+=1
@@ -67,6 +68,7 @@ if __name__ == "__main__":
             Y+=1
             Z+=1
             CO2+=1
+            '''
             msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureOut)+",\"humidityIn\":"+str(humidityIn)+",\"humidityOut\":"+str(humidityOut)+",\"weigth0\":"+str(weigth0)+",\"weigth1\":"+str(weigth1)+",\"weigth2\":"+str(weigth2)+",\"X\":"+str(X)+",\"Y\":"+str(Y)+",\"Z\":"+str(Z)+",\"CO2\":"+str(CO2)+"}"
             print("send"+str(i))
             client.publish(topic_pub1, msg)
