@@ -11,6 +11,7 @@ from tb_device_mqtt import TBDeviceMqttClient, TBPublishInfo
 ## Libraries for hive sensors management as mqtt gateway
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
+import os
 
 logging.basicConfig(level=logging.INFO)
 
@@ -62,6 +63,9 @@ value_hive={1:0,2:0,3:0}
 notif_hive={1:0,2:0,3:0}
 sampling_period_hive={1:120,2:120,3:120}
 sampling_period_hive_request={1:0,2:0,3:0}
+light_indicator_hive={1:0,2:0,3:0}
+weight_indicator_hive={1:0,2:0,3:0}
+
 
 
 # Hivegt functions
@@ -311,16 +315,6 @@ def check_avgs(hive):
                 avg_alerts.update(attributes)
         print("Sending for hive"+str(i)+" "+json.dumps(avg_alerts))
         device.send_attributes(avg_alerts)
-'''
-def getHiveNotif(time_frame,ts,hive):
-    notifs={}
-    for i in range(notif_hive[hive]-1,-1,-1):
-        if(msg_from_hive_hist[hive]["notifications"][i]["ts"])<(ts-time_frame):
-            break
-        #print(i)
-        notifs.update(msg_from_hive_hist[hive]["notifications"][i])
-    return notifs
-'''
 
 def getLatLng(time_frame,ts,hive):
     lat=0
@@ -407,10 +401,28 @@ def periodic_avg():
 def set_hive_indicator_light(hive,light):
     print("hive"+str(hive)+" lightIndicator "+str(light))
     hivegt.publish("hive/"+str(hive)+"/setIndicatorLight",light)
+    if light == True:
+        light_indicator_hive[hive]=1
+    elif light == False:
+        light_indicator_hive[hive]=0
 
-def set_hive_indicator_weigth(hive,weight):
-    print("hive"+str(hive)+" weightIndicator "+str(weight))
-    hivegt.publish("hive/"+str(hive)+"/setWeightIndicatorA",weight)
+def set_hive_indicator_weigth(hive,weigth):
+    print("hive"+str(hive)+" weightIndicator "+str(weigth))
+    payload={}
+    weigth_keys=["avweigth0","avweigth1","avweigth2"]
+    global msg_to_TB_hist
+    if weigth == True:
+        #TODO
+        for i in range(1,4):
+            for key in weigth_keys:
+                print(key)
+                print(json.dumps(msg_to_TB_hist[i]["values"][value_TB[i]]))
+                #print(json.dumps(msg_to_TB_hist[i]["values"]))
+                #print(json.dump(msg_to_TB_hist[i]["values"][-1][values_TB_keys[key]]))
+    elif weight == False:
+        pass
+
+    #hivegt.publish("hive/"+str(hive)+"/setWeightIndicatorA",weight)
 
 def set_hive_sampling_period(hive,period,req):
     global sampling_period_hive_request
@@ -432,44 +444,78 @@ def set_gt_sampling_period(period):
 def on_server_side_rpc_request(request_id, request_body):
     global sampling_period_hive_request
     #print(request_body)
+    #DEFAULT
     if request_body["method"] == "helloWorld":
         print("***************hello****************")
         print(request_body)
     elif request_body["method"] == "getValue":
         print("***************getValue****************")
         device1.send_rpc_reply(request_id, {"params": 0})
-    elif request_body["method"] == "getSamplingPeriodAnswer":
-        print("***************getSamplingPeriodAnswer****************")
-        device1.send_rpc_reply(request_id, {"params": 0})
+    #HIVE SAMPLING
+    elif request_body["method"] == "getSamplingPeriodAnswerA":
+        print("***************getSamplingPeriodAnswerA****************")
+        device1.send_rpc_reply(request_id, sampling_period_hive[1])
     elif request_body["method"] == "setSamplingPeriodA":
         print("***************setSamplingPeriodA****************")
         sampling_period_hive_request[1]=request_body["params"]
         set_hive_sampling_period(1,request_body["params"],request_id)
+    elif request_body["method"] == "getSamplingPeriodAnswerB":
+        print("***************getSamplingPeriodAnswerB****************")
+        device2.send_rpc_reply(request_id, sampling_period_hive[2])
     elif request_body["method"] == "setSamplingPeriodB":
         print("***************setSamplingPeriodB****************")
         sampling_period_hive_request[2]=request_body["params"]
         set_hive_sampling_period(2,request_body["params"],request_i)
+    elif request_body["method"] == "getSamplingPeriodAnswerC":
+        print("***************getSamplingPeriodAnswerC****************")
+        device3.send_rpc_reply(request_id, sampling_period_hive[3])
     elif request_body["method"] == "setSamplingPeriodC":
         print("***************setSamplingPeriodC****************")
         sampling_period_hive_request[3]=request_body["params"]
         set_hive_sampling_period(3,request_body["params"],request_i)
+    #GT SAMPLING
+    elif request_body["method"] == "getSamplingPeriodGt":
+        print("***************getSamplingPeriodGt****************")
+        device1.send_rpc_reply(request_id, gatewaySamplingPeriod)
     elif request_body["method"] == "setSamplingPeriodGt":
         print("***************setSamplingPeriodGt****************")
         set_gt_sampling_period(request_body["params"])
+    #LIGHT INDICATOR
+    elif request_body["method"] == "getLightIndicatorA":
+        print("***************getLightIndicatorA****************")
+        print(request_body)
+        device1.send_rpc_reply(request_id, light_indicator_hive[1])
     elif request_body["method"] == "setLightIndicatorA":
         print("***************setLightIndicatorA****************")
         set_hive_indicator_light(1,request_body["params"])
+    elif request_body["method"] == "getLightIndicatorB":
+        print("***************getLightIndicatorB****************")
+        device2.send_rpc_reply(request_id, light_indicator_hive[2])
     elif request_body["method"] == "setLightIndicatorB":
         print("***************setLightIndicatorB****************")
         set_hive_indicator_light(2,request_body["params"])
+    elif request_body["method"] == "getLightIndicatorC":
+        print("***************getLightIndicatorC****************")
+        device3.send_rpc_reply(request_id, light_indicator_hive[3])
     elif request_body["method"] == "setLightIndicatorC":
         print("***************setLightIndicatorc****************")
         set_hive_indicator_light(3,request_body["params"])
+    #WEIGHT INDICATOR
+    elif request_body["method"] == "getWeightIndicatorA":
+        print("***************getWeightIndicatorA****************")
+        device1.send_rpc_reply(request_id, weight_indicator_hive[1])
     elif request_body["method"] == "setWeightIndicatorA":
         print("***************setWeightIndicatorA****************")
         set_hive_indicator_weigth(1,request_body["params"])
+    #COMMANDS
+    elif request_body["method"] == "sendCommand":
+        print("***************sendCommand****************")
+        #TODO
+        device1.send_rpc_reply(request_id,{"ok": True,"platform": os.platform(),"type": os.type(),"release": os.release()})
+        print(request_body)
     else:
         print(request_body)
+
 
 ## Main initialization and thread
 if __name__ == "__main__":
