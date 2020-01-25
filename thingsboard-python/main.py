@@ -411,7 +411,7 @@ def set_hive_indicator_weight(hive,weight):
     print("hive"+str(hive)+" weightIndicator "+str(weight))
     payload={"avweight0":0,"avweight1":0,"avweight2":0}
     if weight == True:
-        #TODO
+        weight_indicator_hive[hive]=1
         print(payload.keys())
         for key in payload.keys():
             print(key)
@@ -422,6 +422,7 @@ def set_hive_indicator_weight(hive,weight):
         hivegt.publish("hive/"+str(hive)+"/setweightIndicator",json.dumps(payload))
         print("hive"+str(hive)+" weightIndicator "+json.dumps(payload))
     elif weight == False:
+        weight_indicator_hive[hive]=0
         pass
 
 def set_hive_sampling_period(hive,period,req):
@@ -500,9 +501,10 @@ def on_server_side_rpc_request(request_id, request_body):
     elif request_body["method"] == "setLightIndicatorC":
         print("***************setLightIndicatorc****************")
         set_hive_indicator_light(3,request_body["params"])
+    #TODO
     #weight INDICATOR
-    elif request_body["method"] == "getweightIndicatorA":
-        print("***************getweightIndicatorA****************")
+    elif request_body["method"] == "getWeightIndicatorA":
+        print("***************getWeightIndicatorA****************")
         device1.send_rpc_reply(request_id, weight_indicator_hive[1])
     elif request_body["method"] == "setWeightIndicatorA":
         print("***************setweightIndicatorA****************")
