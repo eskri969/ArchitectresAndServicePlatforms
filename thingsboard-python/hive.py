@@ -43,9 +43,9 @@ if __name__ == "__main__":
         temperatureOut=10
         humidityIn=20
         humidityOut=30
-        weigth0=40
-        weigth1=50
-        weigth2=60
+        weight0=40
+        weight1=50
+        weight2=60
         X=70
         Y=80
         Z=90
@@ -58,18 +58,18 @@ if __name__ == "__main__":
             temperatureOut+=1
             humidityIn+=1
             humidityOut+=1
-            #weigth0+=1
-            #weigth1+=1
-            #weigth2+=1
-            weigth0=25
-            weigth1=25
-            weigth2=25
+            #weight0+=1
+            #weight1+=1
+            #weight2+=1
+            weight0=25
+            weight1=25
+            weight2=25
             X+=1
             Y+=1
             Z+=1
             CO2+=1
             '''
-            msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureOut)+",\"humidityIn\":"+str(humidityIn)+",\"humidityOut\":"+str(humidityOut)+",\"weigth0\":"+str(weigth0)+",\"weigth1\":"+str(weigth1)+",\"weigth2\":"+str(weigth2)+",\"X\":"+str(X)+",\"Y\":"+str(Y)+",\"Z\":"+str(Z)+",\"CO2\":"+str(CO2)+"}"
+            msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureOut)+",\"humidityIn\":"+str(humidityIn)+",\"humidityOut\":"+str(humidityOut)+",\"weight0\":"+str(weight0)+",\"weight1\":"+str(weight1)+",\"weight2\":"+str(weight2)+",\"X\":"+str(X)+",\"Y\":"+str(Y)+",\"Z\":"+str(Z)+",\"CO2\":"+str(CO2)+"}"
             print("send"+str(i))
             client.publish(topic_pub1, msg)
             client.publish(topic_pub2, msg)

@@ -18,19 +18,19 @@ logging.basicConfig(level=logging.INFO)
 ## Thinsgboard var def
 server_address = "srv-iot.diatel.upm.es"
 sensor_critic_keys={}
-values_TB_keys=["avtemperatureIn","avtemperatureOut","avhumidityIn","avhumidityOut","avweigth0","avweigth1","avweigth2","avX","avY","avZ","avCO2"]
+values_TB_keys=["avtemperatureIn","avtemperatureOut","avhumidityIn","avhumidityOut","avweight0","avweight1","avweight2","avX","avY","avZ","avCO2"]
 notif_TB_keys={"statusTempIn":"avtemperatureIn","statusTempOut":"avtemperatureOut","statusHumIn":"avhumidityIn","statusHumOut":"avhumidityOut","statusCO2":"avCO2"}
 msg_to_TB_hist = {
-    1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+    1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
             "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
-    2:{"values":{0:{"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+    2:{"values":{0:{"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
             "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
-    3:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweigth0": 0,"avweigth1": 0,"avweigth2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+    3:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
             "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
-gatewaySamplingPeriod=100.0
+gatewaySamplingPeriod=20.0
 
 ## Thinsgboard devices def
 device1 = TBDeviceMqttClient(server_address, "IU8rjHe8MCyu0A0oqk7S")
@@ -50,14 +50,14 @@ def TB_connect_all():
 hivegt = mqtt.Client(protocol=mqtt.MQTTv311, transport="tcp")
 mosquitto_broker = "127.0.0.1"
 clear_hive_att={"criticTempIn":0,"criticTempOut":0,"criticHumIn":0,"criticHumOut":0,"criticCo2":0}
-values_hive_keys=["temperatureIn","temperatureOut","humidityIn","humidityOut","weigth0","weigth1","weigth2","X","Y","Z","CO2"]
+values_hive_keys=["temperatureIn","temperatureOut","humidityIn","humidityOut","weight0","weight1","weight2","X","Y","Z","CO2"]
 msg_from_hive_hist = {
-    1:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"CO2_alert":0}}},
-    2:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"CO2_alert":0}}},
-    3:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
-            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weigth0": 0,"weigth1": 0,"weigth2": 0,"accel_alert":0,"CO2_alert":0}}},
+    1:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weight0": 0,"weight1": 0,"weight2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weight0": 0,"weight1": 0,"weight2": 0,"accel_alert":0,"CO2_alert":0}}},
+    2:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weight0": 0,"weight1": 0,"weight2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weight0": 0,"weight1": 0,"weight2": 0,"accel_alert":0,"CO2_alert":0}}},
+    3:{"values":{0:{"ts": 0,"temperatureIn": 0,"temperatureOut": 0,"humidityIn": 0,"humidityOut": 0,"weight0": 0,"weight1": 0,"weight2": 0,"X": 0,"Y": 0,"Z": 0,"CO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"ts": 0,"alert_temp": 0,"alert_hum": 0,"weight0": 0,"weight1": 0,"weight2": 0,"accel_alert":0,"CO2_alert":0}}},
     }
 value_hive={1:0,2:0,3:0}
 notif_hive={1:0,2:0,3:0}
@@ -65,6 +65,7 @@ sampling_period_hive={1:120,2:120,3:120}
 sampling_period_hive_request={1:0,2:0,3:0}
 light_indicator_hive={1:0,2:0,3:0}
 weight_indicator_hive={1:0,2:0,3:0}
+weight_th=20
 
 
 
@@ -406,23 +407,22 @@ def set_hive_indicator_light(hive,light):
     elif light == False:
         light_indicator_hive[hive]=0
 
-def set_hive_indicator_weigth(hive,weigth):
-    print("hive"+str(hive)+" weightIndicator "+str(weigth))
-    payload={}
-    weigth_keys=["avweigth0","avweigth1","avweigth2"]
-    global msg_to_TB_hist
-    if weigth == True:
+def set_hive_indicator_weight(hive,weight):
+    print("hive"+str(hive)+" weightIndicator "+str(weight))
+    payload={"avweight0":0,"avweight1":0,"avweight2":0}
+    if weight == True:
         #TODO
-        for i in range(1,4):
-            for key in weigth_keys:
-                print(key)
-                print(json.dumps(msg_to_TB_hist[i]["values"][value_TB[i]]))
-                #print(json.dumps(msg_to_TB_hist[i]["values"]))
-                #print(json.dump(msg_to_TB_hist[i]["values"][-1][values_TB_keys[key]]))
+        print(payload.keys())
+        for key in payload.keys():
+            print(key)
+            print(json.dumps(msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key]))
+            if msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key] !="" and  msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key] > weight_th:
+                payload[key]=1
+                print("light on")
+        hivegt.publish("hive/"+str(hive)+"/setweightIndicator",json.dumps(payload))
+        print("hive"+str(hive)+" weightIndicator "+json.dumps(payload))
     elif weight == False:
         pass
-
-    #hivegt.publish("hive/"+str(hive)+"/setWeightIndicatorA",weight)
 
 def set_hive_sampling_period(hive,period,req):
     global sampling_period_hive_request
@@ -500,13 +500,13 @@ def on_server_side_rpc_request(request_id, request_body):
     elif request_body["method"] == "setLightIndicatorC":
         print("***************setLightIndicatorc****************")
         set_hive_indicator_light(3,request_body["params"])
-    #WEIGHT INDICATOR
-    elif request_body["method"] == "getWeightIndicatorA":
-        print("***************getWeightIndicatorA****************")
+    #weight INDICATOR
+    elif request_body["method"] == "getweightIndicatorA":
+        print("***************getweightIndicatorA****************")
         device1.send_rpc_reply(request_id, weight_indicator_hive[1])
     elif request_body["method"] == "setWeightIndicatorA":
-        print("***************setWeightIndicatorA****************")
-        set_hive_indicator_weigth(1,request_body["params"])
+        print("***************setweightIndicatorA****************")
+        set_hive_indicator_weight(1,request_body["params"])
     #COMMANDS
     elif request_body["method"] == "sendCommand":
         print("***************sendCommand****************")
