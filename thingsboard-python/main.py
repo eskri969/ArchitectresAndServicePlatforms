@@ -400,6 +400,10 @@ def periodic_avg():
     #timer.start()
 '''
 def set_hive_indicator_light(hive,light):
+    if light == True:
+        light=1
+    elif light == False:
+        light=0
     print("hive"+str(hive)+" lightIndicator "+str(light))
     hivegt.publish("hive/"+str(hive)+"/setIndicatorLight",light)
     if light == True:
@@ -444,7 +448,7 @@ def set_gt_sampling_period(period):
 # dependently of request method we send different data back
 def on_server_side_rpc_request(request_id, request_body):
     global sampling_period_hive_request
-    #print(request_body)
+    print(request_body)
     #DEFAULT
     if request_body["method"] == "helloWorld":
         print("***************hello****************")
@@ -500,8 +504,8 @@ def on_server_side_rpc_request(request_id, request_body):
         device3.send_rpc_reply(request_id, light_indicator_hive[3])
     elif request_body["method"] == "setLightIndicatorC":
         print("***************setLightIndicatorc****************")
-    #weight INDICATOR
         set_hive_indicator_light(3,request_body["params"])
+    #weight INDICATOR
     elif request_body["method"] == "getWeightIndicatorA":
         print("***************getWeightIndicatorA****************")
         device1.send_rpc_reply(request_id, weight_indicator_hive[1])
@@ -510,13 +514,13 @@ def on_server_side_rpc_request(request_id, request_body):
         set_hive_indicator_weight(1,request_body["params"])
     elif request_body["method"] == "getWeightIndicatorB":
         print("***************getWeightIndicatorB****************")
-        device1.send_rpc_reply(request_id, weight_indicator_hive[2])
+        device2.send_rpc_reply(request_id, weight_indicator_hive[2])
     elif request_body["method"] == "setWeightIndicatorB":
         print("***************setweightIndicatorA****************")
         set_hive_indicator_weight(2,request_body["params"])
     elif request_body["method"] == "getWeightIndicatorC":
         print("***************getWeightIndicatorC****************")
-        device1.send_rpc_reply(request_id, weight_indicator_hive[3])
+        device3.send_rpc_reply(request_id, weight_indicator_hive[3])
     elif request_body["method"] == "setWeightIndicatorC":
         print("***************setweightIndicatorC****************")
         set_hive_indicator_weight(3,request_body["params"])
@@ -538,7 +542,7 @@ if __name__ == "__main__":
         print("all Connected")
         while True:
             print("PERIOD DONE -> "+str(datetime.datetime.now()))
-            publish_avg(gatewaySamplingPeriod)
+            #publish_avg(gatewaySamplingPeriod)
             print("NEXT IN -> "+str(gatewaySamplingPeriod))
             time.sleep(gatewaySamplingPeriod)
     except KeyboardInterrupt:
