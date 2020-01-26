@@ -501,7 +501,7 @@ def on_server_side_rpc_request(request_id, request_body):
     elif request_body["method"] == "setLightIndicatorC":
         print("***************setLightIndicatorc****************")
     #weight INDICATOR
-    set_hive_indicator_light(3,request_body["params"])
+        set_hive_indicator_light(3,request_body["params"])
     elif request_body["method"] == "getWeightIndicatorA":
         print("***************getWeightIndicatorA****************")
         device1.send_rpc_reply(request_id, weight_indicator_hive[1])
