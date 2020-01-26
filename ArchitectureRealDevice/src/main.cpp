@@ -42,44 +42,6 @@ const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x68;
 
 int16_t AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ;
 
-void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
-  Wire.beginTransmission(deviceAddress);
-  Wire.write(regAddress);
-  Wire.write(data);
-  Wire.endTransmission();
-}
-
-// read all 14 register
-void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
-  Wire.beginTransmission(deviceAddress);
-  Wire.write(regAddress);
-  Wire.endTransmission();
-  Wire.requestFrom(deviceAddress, (uint8_t)14);
-  AccelX = (((int16_t)Wire.read()<<8) | Wire.read());
-  AccelY = (((int16_t)Wire.read()<<8) | Wire.read());
-  AccelZ = (((int16_t)Wire.read()<<8) | Wire.read());
-  Temperature = (((int16_t)Wire.read()<<8) | Wire.read());
-  GyroX = (((int16_t)Wire.read()<<8) | Wire.read());
-  GyroY = (((int16_t)Wire.read()<<8) | Wire.read());
-  GyroZ = (((int16_t)Wire.read()<<8) | Wire.read());
-}
-
-//configure MPU6050
-void MPU6050_Init(){
-  delay(150);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_CONFIG, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_GYRO_CONFIG, 0x00);//set +/-250 degree/second full scale
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_CONFIG, 0x00);// set +/- 2g full scale
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_FIFO_EN, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_INT_ENABLE, 0x01);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
-}
-
-
 // WiFi
 // Make sure to update this for your own WiFi network!
 const char* ssid = "CentralPerk";
@@ -131,26 +93,71 @@ int weigthIndicator2 = A0;
 int weigthIndicator3 = A0;
 
 int n=0;
+
+void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
+  Wire.beginTransmission(deviceAddress);
+  Wire.write(regAddress);
+  Wire.write(data);
+  Wire.endTransmission();
+}
+
+// read all 14 register
+void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
+  Wire.beginTransmission(deviceAddress);
+  Wire.write(regAddress);
+  Wire.endTransmission();
+  Wire.requestFrom(deviceAddress, (uint8_t)14);
+  AccelX = (((int16_t)Wire.read()<<8) | Wire.read());
+  AccelY = (((int16_t)Wire.read()<<8) | Wire.read());
+  AccelZ = (((int16_t)Wire.read()<<8) | Wire.read());
+  Temperature = (((int16_t)Wire.read()<<8) | Wire.read());
+  GyroX = (((int16_t)Wire.read()<<8) | Wire.read());
+  GyroY = (((int16_t)Wire.read()<<8) | Wire.read());
+  GyroZ = (((int16_t)Wire.read()<<8) | Wire.read());
+}
+
+//configure MPU6050
+void MPU6050_Init(){
+  delay(150);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_CONFIG, 0x00);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_GYRO_CONFIG, 0x00);//set +/-250 degree/second full scale
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_CONFIG, 0x00);// set +/- 2g full scale
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_FIFO_EN, 0x00);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_INT_ENABLE, 0x01);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
+}
+
+void read_acc(){
+  Read_RawValue(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H);
+  X = (float)AccelX/AccelScaleFactor;
+  Y = (float)AccelY/AccelScaleFactor;
+  Z = (float)AccelZ/AccelScaleFactor;
+  //Serial.printf("X:%f Y:%f Z:%f",X,Y,Z);
+}
+
+void read_dht(){
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  temperatureIn=event.temperature;
+  temperatureOut=temperatureIn+5;
+  dht.humidity().getEvent(&event);
+  humidityIn=event.relative_humidity;
+  humidityOut=humidityIn-10;
+}
+
 void sendTelemetry(){
   Serial.printf("Sending %d\n",n);
-  /*
-  Serial.print(F("Temp:"));
-  Serial.print(event.temperature);
-  dht.humidity().getEvent(&event);
-  Serial.print(F("\tHum:"));
-  Serial.println(event.relative_humidity);
-  */
-  temperatureOut=0;
-  humidityOut=0;
-  weigth0=0;
-  weigth1=0;
-  weigth2=0;
-  X=0;
-  Y=0;
-  Z=0;
-  co2=0;
-  //msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureOut)+",\"humidityIn\":"+str(humidityIn)+",\"humidityOut\":"+str(humidityOut)+",\"weigth0\":"+str(weigth0)+",\"weigth1\":"+str(weigth1)+",\"weigth2\":"+str(weigth2)+",\"X\":"+str(X)+",\"Y\":"+str(Y)+",\"Z\":"+str(Z)+",\"CO2\":"+str(CO2)+"}"
-  sprintf(msg,"{\"temperatureIn\":%f,\"temperatureOut\":%f,\"humidityIn\":%f,\"humidityOut\":%f,\"weigth0\":%f,\"weigth1\":%f,\"weigth2\":%f,\"X\":%f,\"Y\":%f,\"Z\":%f,\"CO2\":%f}",
+  read_dht();
+  read_acc();
+  weigth0=random(0,5);
+  weigth1=random(0,5);
+  weigth2=random(0,5);
+  co2=random(0,80);
+  sprintf(msg,"{\"temperatureIn\":%f,\"temperatureOut\":%f,\"humidityIn\":%f,\"humidityOut\":%f,\"weight0\":%f,\"weight1\":%f,\"weight2\":%f,\"X\":%f,\"Y\":%f,\"Z\":%f,\"CO2\":%f}",
           temperatureIn,
           temperatureOut,
           humidityIn,
@@ -162,20 +169,24 @@ void sendTelemetry(){
           Y,
           Z,
           co2);
-  /*
-  sprintf(msg,"{\"temperatureIn\":%f,\"temperatureOut\":%f,\"humidityIn\":%f,\"humidityOut\":%f,\"weigth0\":%f,\"weigth1\":%f,\"weigth2\":%f}",
-    temperatureIn,
-    temperatureOut,
-    humidityIn,
-    humidityOut,
-    weigth0,
-    weigth1,
-    weigth2);
-  */
   if (client.publish(hive_telemetry, msg)) {
       Serial.println("hive_telemetry sent");
   }
   n+=1;
+}
+
+void ReceivedMessage(char* topic, byte* payload, unsigned int length) {
+  // Output the first character of the message to serial (debug)
+  //String msg_received = (char*)payload;
+  char var[50];
+  for (int i = 0; i < length; i++) {
+    var[i]=((char)payload[i]);
+  }
+  Serial.printf("\n%s\t%s\t%d\t",topic,var,length);
+  if(strcmp(topic, set_sampling_period)==0){
+    Serial.printf("change \n");
+    timer1.interval(atoi(var));
+  }
 }
 
 void setup()
@@ -207,6 +218,7 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+  client.setCallback(ReceivedMessage);
   // Connect to MQTT Broker
   // client.connect returns a boolean value to let us know if the connection was successful.
   if (client.connect(clientID, willTopic, willQoS, willRetain, willMessage)) {
@@ -224,36 +236,5 @@ void setup()
 void loop()
 {
   timer1.update();
-  sensors_event_t event;
-  dht.temperature().getEvent(&event);
-  Serial.print(F("Temp:"));
-  Serial.print(event.temperature);
-  temperatureIn=event.temperature;
-  dht.humidity().getEvent(&event);
-  Serial.print(F("\tHum:"));
-  Serial.println(event.relative_humidity);
-  humidityIn=event.relative_humidity;
-  //Serial.printf("hum: %f, temp: %f\n",humidityIn,temperatureIn);
-
-  double Ax, Ay, Az, T, Gx, Gy, Gz;
-
-  Read_RawValue(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H);
-
-  //divide each with their sensitivity scale factor
-  Ax = (double)AccelX/AccelScaleFactor;
-  Ay = (double)AccelY/AccelScaleFactor;
-  Az = (double)AccelZ/AccelScaleFactor;
-  T = (double)Temperature/340+36.53; //temperature formula
-  Gx = (double)GyroX/GyroScaleFactor;
-  Gy = (double)GyroY/GyroScaleFactor;
-  Gz = (double)GyroZ/GyroScaleFactor;
-
-  Serial.print("Ax: "); Serial.print(Ax);
-  Serial.print(" Ay: "); Serial.print(Ay);
-  Serial.print(" Az: "); Serial.print(Az);
-  Serial.print(" T: "); Serial.print(T);
-  Serial.print(" Gx: "); Serial.print(Gx);
-  Serial.print(" Gy: "); Serial.print(Gy);
-  Serial.print(" Gz: "); Serial.println(Gz);
-  delay(2000);
+  client.loop();
 }
