@@ -87,10 +87,10 @@ float sampling_delay=5000;
 void sendTelemetry();
 Ticker timer1(sendTelemetry,10000, 0, MILLIS);
 //HW declarations
-int lightIndicator = A0;
-int weigthIndicator1 = A0;
-int weigthIndicator2 = A0;
-int weigthIndicator3 = A0;
+int lightIndicator = 14;
+int weigthIndicator1 = 12;
+int weigthIndicator2 = 13;
+int weigthIndicator3 = 15;
 
 int n=0;
 
@@ -179,14 +179,35 @@ void ReceivedMessage(char* topic, byte* payload, unsigned int length) {
   // Output the first character of the message to serial (debug)
   //String msg_received = (char*)payload;
   char var[50];
-  for (int i = 0; i < length; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     var[i]=((char)payload[i]);
   }
-  Serial.printf("\n%s\t%s\t%d\t",topic,var,length);
+  Serial.printf("\n%s\t%s\t%d\n",topic,var,length);
   if(strcmp(topic, set_sampling_period)==0){
-    Serial.printf("change \n");
+    Serial.printf("set_sampling_period %d\n",atoi(var));
     timer1.interval(atoi(var));
   }
+  if(strcmp(topic, set_light_indicator)==0){
+    if(atoi(var)==1){
+      Serial.printf("set_light_indicator ON\n");
+      digitalWrite(lightIndicator,HIGH);
+    }
+    else if(atoi(var)==0){
+      Serial.printf("set_light_indicator OFF\n");
+      digitalWrite(lightIndicator,LOW);
+    }
+  }
+  /*
+  if(strcmp(topic, set_weight_indicator)==0){
+    Serial.printf("set_weight_indicator %d\n",atoi(var));
+    if(atoi(var)==1){
+    }
+    else if(atoi(var)==0){
+
+    }
+  }
+  */
+
 }
 
 void setup()
@@ -196,9 +217,18 @@ void setup()
   dht.begin();
   Wire.begin(sda, scl);
   MPU6050_Init();
-  // Print temperature sensor details.
   sensor_t sensor;
   dht.temperature().getSensor(&sensor);
+  ///////Setup Lights
+  pinMode(lightIndicator, OUTPUT);
+  digitalWrite(lightIndicator,LOW);
+  pinMode(weigthIndicator1, OUTPUT);
+  digitalWrite(weigthIndicator1,LOW);
+  pinMode(weigthIndicator2, OUTPUT);
+  digitalWrite(weigthIndicator2,LOW);
+  pinMode(weigthIndicator3, OUTPUT);
+  digitalWrite(weigthIndicator3,LOW);
+
   ///////Setup MQTT
   // Switch the on-board LED off to start with
   Serial.print("Connecting to ");
