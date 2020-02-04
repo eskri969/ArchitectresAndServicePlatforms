@@ -20,8 +20,8 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 const uint8_t MPU6050SlaveAddress = 0x68;
 
 // Select SDA and SCL pins for I2C communication
-const uint8_t scl = 4;
-const uint8_t sda = 5;
+const uint8_t scl = 5;
+const uint8_t sda = 4;
 
 // sensitivity scale factor respective to full scale setting provided in datasheet
 const uint16_t AccelScaleFactor = 16384;
@@ -44,18 +44,29 @@ int16_t AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ;
 
 // WiFi
 // Make sure to update this for your own WiFi network!
-const char* ssid = "CentralPerk";
+const char* ssid = "Wall-e";
 const char* wifi_password = "@gmail.com";
 
 // MQTT
 // Make sure to update this for your own MQTT Broker!
-const char* mqtt_server = "192.168.0.128";
+const char* mqtt_server = "192.168.43.89";
 ///GeneralTopics
 const char* hive_telemetry = "hive/3/telemetry";
 const char* hive_alert = "hive/3/alert";
 const char* set_sampling_period = "hive/3/setSamplingPeriod";
 const char* set_light_indicator = "hive/3/setIndicatorLight";
 const char* set_weight_indicator = "hive/3/setweightIndicator";
+const char* criticMaxTempIn = "hive/3/alert/tempIn/max";
+const char* criticMinTempIn = "hive/3/alert/tempIn/mix";
+const char* criticMaxHumIn = "hive/3/alert/humIn/max";
+const char* criticMinHumIn = "hive/3/alert/humIn/mix";
+const char* criticMaxCo2In = "hive/3/alert/co2/max";
+const char* criticMinCo2In = "hive/3/alert/co2/mix";
+const char* criticMaxTempOut = "hive/3/alert/tempOut/max";
+const char* criticMinTempOut = "hive/3/alert/tempOut/mix";
+const char* falltopic = "hive/3/alert/fall";
+const char* thefttopic = "hive/3/alert/theft";
+
 
 
 
@@ -82,15 +93,17 @@ float X=0;
 float Y=0;
 float Z=0;
 float co2=0;
-float sampling_delay=5000;
+float lat=40.388875;
+float lng=-3.628660;
 //Timers
 void sendTelemetry();
-Ticker timer1(sendTelemetry,10000, 0, MILLIS);
+Ticker timer1(sendTelemetry,60000, 0, MILLIS);
 //HW declarations
 int lightIndicator = 14;
 int weigthIndicator1 = 12;
 int weigthIndicator2 = 13;
 int weigthIndicator3 = 15;
+int pinTheft = 16;
 
 int n=0;
 
@@ -131,48 +144,128 @@ void MPU6050_Init(){
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
 }
 
-void read_acc(){
+int read_acc(){
   Read_RawValue(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H);
   X = (float)AccelX/AccelScaleFactor;
   Y = (float)AccelY/AccelScaleFactor;
   Z = (float)AccelZ/AccelScaleFactor;
-  //Serial.printf("X:%f Y:%f Z:%f",X,Y,Z);
+  Serial.printf("X:%f Y:%f Z:%f\n",X,Y,Z);
+  if( Z<0.6 || Y>0.3 || Y<-0.3 || X>0.3 || X<-0.3){
+    return 1;
+  }
+  else{
+    return 0;
+  }
 }
 
 void read_dht(){
   sensors_event_t event;
   dht.temperature().getEvent(&event);
   temperatureIn=event.temperature;
+  if(temperatureIn>40){
+    sprintf(msg,"%f",temperatureIn);
+    if (client.publish(criticMaxTempIn, msg)){
+        Serial.println("temperatureIn alert");
+    }
+  }
+  else if(temperatureIn<15){
+    sprintf(msg,"%f",temperatureIn);
+    if (client.publish(criticMinTempIn, msg)){
+        Serial.println("temperatureIn alert");
+    }
+  }
   temperatureOut=temperatureIn+5;
+  if(temperatureOut>45){
+    sprintf(msg,"%f",temperatureOut);
+    if (client.publish(criticMaxTempOut, msg)){
+        Serial.println("temperatureOut alert");
+    }
+  }
+  else if(temperatureOut<0){
+    sprintf(msg,"%f",temperatureOut);
+    if (client.publish(criticMinTempOut, msg)){
+        Serial.println("temperatureOut alert");
+    }
+  }
   dht.humidity().getEvent(&event);
   humidityIn=event.relative_humidity;
+  if(humidityIn>75){
+    sprintf(msg,"%f",humidityIn);
+    if (client.publish(criticMaxHumIn, msg)){
+        Serial.println("humidityIn alert");
+    }
+  }
+  else if(humidityIn<15){
+    sprintf(msg,"%f",humidityIn);
+    if (client.publish(criticMinHumIn, msg)){
+        Serial.println("humidityIn alert");
+    }
+  }
   humidityOut=humidityIn-10;
 }
 
 void sendTelemetry(){
   Serial.printf("Sending %d\n",n);
-  read_dht();
-  read_acc();
   weigth0=random(0,5);
   weigth1=random(0,5);
   weigth2=random(0,5);
   co2=random(0,80);
-  sprintf(msg,"{\"temperatureIn\":%f,\"temperatureOut\":%f,\"humidityIn\":%f,\"humidityOut\":%f,\"weight0\":%f,\"weight1\":%f,\"weight2\":%f,\"X\":%f,\"Y\":%f,\"Z\":%f,\"CO2\":%f}",
-          temperatureIn,
-          temperatureOut,
-          humidityIn,
-          humidityOut,
-          weigth0,
-          weigth1,
-          weigth2,
-          X,
-          Y,
-          Z,
-          co2);
+  read_dht();
+  if(!read_acc()){
+    sprintf(msg,"{\"temperatureIn\":%f,\"temperatureOut\":%f,\"humidityIn\":%f,\"humidityOut\":%f,\"weight0\":%f,\"weight1\":%f,\"weight2\":%f,\"CO2\":%f}",
+            temperatureIn,
+            temperatureOut,
+            humidityIn,
+            humidityOut,
+            weigth0,
+            weigth1,
+            weigth2,
+            co2);
+  }
+  else{
+    int theft = digitalRead(pinTheft);
+    Serial.printf("Theft: %d\n",theft);
+    if (theft == HIGH){
+      if (client.publish(thefttopic, "")) {
+          Serial.println("theft sent");
+      }
+      sprintf(msg,"{\"temperatureIn\":%f,\"temperatureOut\":%f,\"humidityIn\":%f,\"humidityOut\":%f,\"weight0\":%f,\"weight1\":%f,\"weight2\":%f,\"X\":%f,\"Y\":%f,\"Z\":%f,\"CO2\":%f,\"lat\":%f,\"lng\":%f}",
+              temperatureIn,
+              temperatureOut,
+              humidityIn,
+              humidityOut,
+              weigth0,
+              weigth1,
+              weigth2,
+              X,
+              Y,
+              Z,
+              co2,
+              lat,
+              lng);
+    }
+    else if (theft == LOW){
+      if (client.publish(falltopic, "")) {
+          Serial.println("fall sent");
+      }
+      sprintf(msg,"{\"temperatureIn\":%f,\"temperatureOut\":%f,\"humidityIn\":%f,\"humidityOut\":%f,\"weight0\":%f,\"weight1\":%f,\"weight2\":%f,\"X\":%f,\"Y\":%f,\"Z\":%f,\"CO2\":%f}",
+              temperatureIn,
+              temperatureOut,
+              humidityIn,
+              humidityOut,
+              weigth0,
+              weigth1,
+              weigth2,
+              X,
+              Y,
+              Z,
+              co2);
+    }
+  }
+  n++;
   if (client.publish(hive_telemetry, msg)) {
       Serial.println("hive_telemetry sent");
   }
-  n+=1;
 }
 
 void ReceivedMessage(char* topic, byte* payload, unsigned int length) {
@@ -181,11 +274,13 @@ void ReceivedMessage(char* topic, byte* payload, unsigned int length) {
   char var[50];
   for (unsigned int i = 0; i < length; i++) {
     var[i]=((char)payload[i]);
+    //Serial.printf("%d%c\n",i,((char)payload[i]));
   }
   Serial.printf("\n%s\t%s\t%d\n",topic,var,length);
+
   if(strcmp(topic, set_sampling_period)==0){
     Serial.printf("set_sampling_period %d\n",atoi(var));
-    timer1.interval(atoi(var));
+    timer1.interval(atoi(var)*1000);
   }
   if(strcmp(topic, set_light_indicator)==0){
     if(atoi(var)==1){
@@ -197,17 +292,34 @@ void ReceivedMessage(char* topic, byte* payload, unsigned int length) {
       digitalWrite(lightIndicator,LOW);
     }
   }
-  /*
   if(strcmp(topic, set_weight_indicator)==0){
-    Serial.printf("set_weight_indicator %d\n",atoi(var));
-    if(atoi(var)==1){
+    Serial.printf("set_weight_indicator\n");
+    Serial.printf("0:%c 1:%c 2:%c\n",var[14],var[30],var[46]);
+    if(atoi(&var[14])==1){
+      Serial.printf("weight0 ON\t");
+      digitalWrite(weigthIndicator1,HIGH);
     }
-    else if(atoi(var)==0){
-
+    else if(atoi(&var[14])==0){
+      Serial.printf("weight0 OFF\t");
+      digitalWrite(weigthIndicator1,LOW);
+    }
+    if(atoi(&var[30])==1){
+      Serial.printf("weight1 ON\t");
+      digitalWrite(weigthIndicator2,HIGH);
+    }
+    else if(atoi(&var[30])==0){
+      Serial.printf("weight1 OFF\t");
+      digitalWrite(weigthIndicator2,LOW);
+    }
+    if(atoi(&var[46])==1){
+      Serial.printf("weight2 ON\n");
+      digitalWrite(weigthIndicator3,HIGH);
+    }
+    else if(atoi(&var[46])==0){
+      Serial.printf("weight1 OFF\n");
+      digitalWrite(weigthIndicator3,LOW);
     }
   }
-  */
-
 }
 
 void setup()
@@ -228,6 +340,8 @@ void setup()
   digitalWrite(weigthIndicator2,LOW);
   pinMode(weigthIndicator3, OUTPUT);
   digitalWrite(weigthIndicator3,LOW);
+  //Setup Button
+  pinMode(pinTheft, INPUT);
 
   ///////Setup MQTT
   // Switch the on-board LED off to start with
