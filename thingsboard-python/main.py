@@ -61,11 +61,11 @@ msg_from_hive_hist = {
     }
 value_hive={1:0,2:0,3:0}
 notif_hive={1:0,2:0,3:0}
-sampling_period_hive={1:120,2:120,3:120}
+sampling_period_hive={1:60,2:60,3:60}
 sampling_period_hive_request={1:0,2:0,3:0}
 light_indicator_hive={1:0,2:0,3:0}
 weight_indicator_hive={1:0,2:0,3:0}
-weight_th=20
+weight_th=2
 
 
 
@@ -82,9 +82,10 @@ def start_hive_gt():
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
-    #hivegt.subscribe("hive/#")
-    hivegt.subscribe("hive/+/alert")
+    hivegt.subscribe("hive/#")
+    hivegt.subscribe("hive/+/alert/#")
     hivegt.subscribe("hive/+/telemetry")
+    #hivegt.subscribe("hive/3/alert/humIn/max")
 
 def on_message(client, userdata, msg):
     print("NEW MSG -> "+msg.topic+" "+str(msg.payload.decode('UTF-8')))
@@ -92,7 +93,7 @@ def on_message(client, userdata, msg):
     global value_hive
     if "hive/1" in msg.topic:
         if "/alert" in msg.topic:
-            print("alert1")
+            print("alert1 "+msg.topic)
             if "/tempIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempIn": 2}
@@ -141,7 +142,7 @@ def on_message(client, userdata, msg):
     if "hive/2" in msg.topic:
         #print("hive2")
         if "/alert" in msg.topic:
-            print("alert2")
+            print("alert2 "+msg.topic)
             if "/tempIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempIn": 2}
@@ -188,9 +189,8 @@ def on_message(client, userdata, msg):
             #print(json.dumps(msg_from_hive_hist["hive2"])+"\n")
             value_hive[2] +=1
     if "hive/3" in msg.topic:
-        #print("hive3")
         if "/alert" in msg.topic:
-            print("alert3")
+            print("alert3 "+msg.topic)
             if "/tempIn" in msg.topic:
                 if "/max" in msg.topic:
                     attributes = {"criticTempIn": 2}
@@ -355,36 +355,37 @@ def publish_avg(time_frame):
             else:
                 msg_to_TB_hist[i]["values"][value_TB[i]][values_TB_keys[key_ind]]=""
             key_ind += 1
-        if i == 1:
-            location = getLatLng(time_frame,ts,i)
-            check_avgs(i)
-            if location != None:
-                msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
-            msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
-            #msg_send.update(getHiveNotif(time_frame,ts,i))
-            print("DEVICE1 SENDING\n"+json.dumps(msg_send))
-            device1.send_attributes(clear_hive_att)
-            device1.send_telemetry(msg_send)
-        elif i== 2:
-            location = getLatLng(time_frame,ts,i)
-            check_avgs(i)
-            if location != None:
-                msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
-            msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
-            #msg_send.update(getHiveNotif(time_frame,ts,i))
-            print("DEVICE2 SENDING\n"+json.dumps(msg_send))
-            device2.send_attributes(clear_hive_att)
-            device2.send_telemetry(msg_send)
-        elif i== 3:
-            location = getLatLng(time_frame,ts,i)
-            check_avgs(i)
-            if location != None:
-                msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
-            msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
-            #msg_send.update(getHiveNotif(time_frame,ts,i))
-            print("DEVICE3 SENDING\n"+json.dumps(msg_send))
-            device3.send_attributes(clear_hive_att)
-            device3.send_telemetry(msg_send)
+        if value_TB[i] != 0:
+            if i == 1:
+                location = getLatLng(time_frame,ts,i)
+                check_avgs(i)
+                if location != None:
+                    msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
+                msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
+                #msg_send.update(getHiveNotif(time_frame,ts,i))
+                print("DEVICE1 SENDING\n"+json.dumps(msg_send))
+                device1.send_attributes(clear_hive_att)
+                device1.send_telemetry(msg_send)
+            elif i== 2:
+                location = getLatLng(time_frame,ts,i)
+                check_avgs(i)
+                if location != None:
+                    msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
+                msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
+                #msg_send.update(getHiveNotif(time_frame,ts,i))
+                print("DEVICE2 SENDING\n"+json.dumps(msg_send))
+                device2.send_attributes(clear_hive_att)
+                device2.send_telemetry(msg_send)
+            elif i== 3:
+                location = getLatLng(time_frame,ts,i)
+                check_avgs(i)
+                if location != None:
+                    msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
+                msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
+                #msg_send.update(getHiveNotif(time_frame,ts,i))
+                print("DEVICE3 SENDING\n"+json.dumps(msg_send))
+                device3.send_attributes(clear_hive_att)
+                device3.send_telemetry(msg_send)
         #print()
     #print(json.dumps(msg_to_TB_hist[1]["values"][value_TB[1]]))
     #device1.send_telemetry(msg_to_TB_hist[1]["values"][value_TB[1]])
@@ -427,7 +428,8 @@ def set_hive_indicator_weight(hive,weight):
         print("hive"+str(hive)+" weightIndicator "+json.dumps(payload))
     elif weight == False:
         weight_indicator_hive[hive]=0
-        pass
+        hivegt.publish("hive/"+str(hive)+"/setweightIndicator",json.dumps(payload))
+
 
 def set_hive_sampling_period(hive,period,req):
     global sampling_period_hive_request
@@ -435,6 +437,7 @@ def set_hive_sampling_period(hive,period,req):
     threading.Timer(10, publish_hive_sampling_period,args=(hive,period,req)).start()
 
 def publish_hive_sampling_period(hive,period,req):
+    print("hive "+str(hive)+" period "+str(period)+" req "+str(req))
     if int(sampling_period_hive_request[hive]) == int(req):
         sampling_period_hive[hive]=period
         print("Sampling Period for Hive"+str(hive)+" = "+str(period))
@@ -470,14 +473,14 @@ def on_server_side_rpc_request(request_id, request_body):
     elif request_body["method"] == "setSamplingPeriodB":
         print("***************setSamplingPeriodB****************")
         sampling_period_hive_request[2]=request_body["params"]
-        set_hive_sampling_period(2,request_body["params"],request_i)
+        set_hive_sampling_period(2,request_body["params"],request_id)
     elif request_body["method"] == "getSamplingPeriodAnswerC":
         print("***************getSamplingPeriodAnswerC****************")
         device3.send_rpc_reply(request_id, sampling_period_hive[3])
     elif request_body["method"] == "setSamplingPeriodC":
         print("***************setSamplingPeriodC****************")
         sampling_period_hive_request[3]=request_body["params"]
-        set_hive_sampling_period(3,request_body["params"],request_i)
+        set_hive_sampling_period(3,request_body["params"],request_id)
     #GT SAMPLING
     elif request_body["method"] == "getSamplingPeriodGt":
         print("***************getSamplingPeriodGt****************")
@@ -542,7 +545,7 @@ if __name__ == "__main__":
         print("all Connected")
         while True:
             print("PERIOD DONE -> "+str(datetime.datetime.now()))
-            #publish_avg(gatewaySamplingPeriod)
+            publish_avg(gatewaySamplingPeriod)
             print("NEXT IN -> "+str(gatewaySamplingPeriod))
             time.sleep(gatewaySamplingPeriod)
     except KeyboardInterrupt:
