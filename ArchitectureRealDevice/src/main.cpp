@@ -44,12 +44,12 @@ int16_t AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ;
 
 // WiFi
 // Make sure to update this for your own WiFi network!
-const char* ssid = "Wall-e";
+const char* ssid = "California";
 const char* wifi_password = "@gmail.com";
 
 // MQTT
 // Make sure to update this for your own MQTT Broker!
-const char* mqtt_server = "192.168.43.89";
+const char* mqtt_server = "10.42.0.1";
 ///GeneralTopics
 const char* hive_telemetry = "hive/3/telemetry";
 const char* hive_alert = "hive/3/alert";

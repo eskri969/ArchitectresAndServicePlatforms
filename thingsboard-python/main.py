@@ -30,7 +30,7 @@ msg_to_TB_hist = {
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
-gatewaySamplingPeriod=20.0
+gatewaySamplingPeriod=120.0
 
 ## Thinsgboard devices def
 device1 = TBDeviceMqttClient(server_address, "IU8rjHe8MCyu0A0oqk7S")
