@@ -73,7 +73,7 @@ if __name__ == "__main__":
             print("send"+str(i))
             client.publish(topic_pub1, msg)
             client.publish(topic_pub2, msg)
-            #client.publish(topic_pub3, msg)
+            client.publish(topic_pub3, msg)
             time.sleep(15)
     except KeyboardInterrupt:
         pass

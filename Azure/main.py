@@ -24,9 +24,9 @@ from azure.iot.device import IoTHubDeviceClient, Message
 # The device connection string to authenticate the device with your IoT hub.
 # Using the Azure CLI:
 # az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyNodeDevice --output table
-CONNECTION_STRING1 = "HostName=testTelemetry.azure-devices.net;DeviceId=MyPythonDevice1;SharedAccessKey=4OvaSgYp4mSED3cKk+iSC+yOGAuayyDDpk6I6dmPS9c="
-CONNECTION_STRING2 = "HostName=testTelemetry.azure-devices.net;DeviceId=MyPythonDevice2;SharedAccessKey=JGbXZdMCrCIVvidD6VUp7gOpWi0n9Sa+75owdRTs0WE="
-CONNECTION_STRING3 = "HostName=testTelemetry.azure-devices.net;DeviceId=MyPythonDevice3;SharedAccessKey=ky1gQTj5Mb/ZhupUoge8z6sTMziTB5qHycacm+Bddms="
+CONNECTION_STRING1 = "HostName=IoTHubCloud.azure-devices.net;DeviceId=MyDevice1;SharedAccessKey=FBPcxJdDzsncJpc4M6yXauqjhW4hMqECxsp4HdqG8WA="
+CONNECTION_STRING2 = "HostName=IoTHubCloud.azure-devices.net;DeviceId=MyDevice2;SharedAccessKey=dpFEacEfBnIa2k7jHcXmWwHSHYoJY4IiyQ+n5ecYLRk="
+CONNECTION_STRING3 = "HostName=IoTHubCloud.azure-devices.net;DeviceId=MyDevice3;SharedAccessKey=KzenEzM1JpzprgH8L+xzTTIuHoZhA2uU3j4O6I+xDNk="
 device1 = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING1)
 device2 = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING2)
 device3 = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING3)
@@ -44,6 +44,8 @@ msg_to_TB_hist = {
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
+
+###### PERIOD ######
 gatewaySamplingPeriod=60
 
 ###Hive MQTTv311
@@ -90,6 +92,7 @@ def on_message(client, userdata, msg):
     msg_dict=json.loads(msg.payload.decode('UTF-8'))
     global value_hive
     if "hive/1" in msg.topic:
+        '''
         if "/alert" in msg.topic:
             print("alert1 "+msg.topic)
             if "/tempIn" in msg.topic:
@@ -131,6 +134,8 @@ def on_message(client, userdata, msg):
             msg_from_hive_hist[1]["notifications"][value_hive[1]].update(msg_dict)
             notif_hive[1] +=1
         elif "/telemetry" in msg.topic:
+        '''
+        if "/telemetry" in msg.topic:
             #print("telemetry from hive1 -> "+str(value_hive[1]))
             msg_from_hive_hist[1]["values"][value_hive[1]]={}
             msg_from_hive_hist[1]["values"][value_hive[1]]["ts"]=time.time()
@@ -139,6 +144,7 @@ def on_message(client, userdata, msg):
             value_hive[1] +=1
     if "hive/2" in msg.topic:
         #print("hive2")
+        '''
         if "/alert" in msg.topic:
             print("alert2 "+msg.topic)
             if "/tempIn" in msg.topic:
@@ -180,6 +186,8 @@ def on_message(client, userdata, msg):
             msg_from_hive_hist[2]["notifications"][value_hive[2]].update(msg_dict)
             notif_hive[2] +=1
         elif "/telemetry" in msg.topic:
+        '''
+        if "/telemetry" in msg.topic:
             #print("telemetry from hive2 -> "+str(value_hive[2]))
             msg_from_hive_hist[2]["values"][value_hive[2]]={}
             msg_from_hive_hist[2]["values"][value_hive[2]]["ts"]=time.time()
@@ -187,6 +195,7 @@ def on_message(client, userdata, msg):
             #print(json.dumps(msg_from_hive_hist["hive2"])+"\n")
             value_hive[2] +=1
     if "hive/3" in msg.topic:
+        '''
         if "/alert" in msg.topic:
             print("alert3 "+msg.topic)
             if "/tempIn" in msg.topic:
@@ -228,6 +237,8 @@ def on_message(client, userdata, msg):
             msg_from_hive_hist[3]["notifications"][value_hive[3]].update(msg_dict)
             notif_hive[3] +=1
         elif "/telemetry" in msg.topic:
+        '''
+        if "/telemetry" in msg.topic:
             #print("telemetry from hive3 -> "+str(value_hive[3]))
             msg_from_hive_hist[3]["values"][value_hive[3]]={}
             msg_from_hive_hist[3]["values"][value_hive[3]]["ts"]=time.time()
@@ -340,7 +351,10 @@ def getLatLng(time_frame,ts,hive):
 def publish_avg(time_frame):
     ts=time.time()
     global value_TB
+    '''
     for i in range (1,4):
+    '''
+    for i in range (3,4):
         print("\n***** Hive "+str(i)+" *****")
         msg_to_TB_hist[i]["values"][value_TB[i]]={}
         key_ind=0
