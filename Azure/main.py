@@ -279,6 +279,7 @@ def calculate_avg(key,time_frame,ts,hive):
 
 
 def check_avgs(hive):
+    '''
     avg_alerts={}
     if hive==1:
         device=device1
@@ -326,6 +327,8 @@ def check_avgs(hive):
                 avg_alerts.update(attributes)
         print("Sending for hive"+str(i)+" "+json.dumps(avg_alerts))
         device.send_message(Message(json.dumps(avg_alerts)))
+        '''
+    pass
 
 def getLatLng(time_frame,ts,hive):
     lat=0
@@ -377,7 +380,9 @@ def publish_avg(time_frame):
                 msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
                 #msg_send.update(getHiveNotif(time_frame,ts,i))
                 print("DEVICE1 SENDING\n"+json.dumps(msg_send))
-                device1.send_message(Message(json.dumps(clear_hive_att)))
+
+                #device1.send_message(Message(json.dumps(clear_hive_att)))
+
                 device1.send_message(Message(json.dumps(msg_send)))
             elif i== 2:
                 location = getLatLng(time_frame,ts,i)
@@ -387,7 +392,9 @@ def publish_avg(time_frame):
                 msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
                 #msg_send.update(getHiveNotif(time_frame,ts,i))
                 print("DEVICE2 SENDING\n"+json.dumps(msg_send))
-                device2.send_message(Message(json.dumps(clear_hive_att)))
+
+                #device2.send_message(Message(json.dumps(clear_hive_att)))
+
                 device2.send_message(Message(json.dumps(msg_send)))
             elif i== 3:
                 location = getLatLng(time_frame,ts,i)
@@ -397,7 +404,9 @@ def publish_avg(time_frame):
                 msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
                 #msg_send.update(getHiveNotif(time_frame,ts,i))
                 print("DEVICE3 SENDING\n"+json.dumps(msg_send))
-                device3.send_message(Message(json.dumps(clear_hive_att)))
+
+                #device3.send_message(Message(json.dumps(clear_hive_att)))
+
                 device3.send_message(Message(json.dumps(msg_send)))
         #print()
     #print(json.dumps(msg_to_TB_hist[1]["values"][value_TB[1]]))
