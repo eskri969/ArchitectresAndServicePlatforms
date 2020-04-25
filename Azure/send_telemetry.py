@@ -3,6 +3,7 @@
 import json
 import random
 import time
+import sys
 
 # Using the Python Device SDK for IoT Hub:
 #   https://github.com/Azure/azure-iot-sdk-python

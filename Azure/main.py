@@ -57,7 +57,7 @@ value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
 
 ###### PERIOD ######
-gatewaySamplingPeriod=10
+gatewaySamplingPeriod=20
 
 ###Hive MQTTv311
 ## Hive gateway def
@@ -283,7 +283,7 @@ def calculate_avg(key,time_frame,ts,hive):
             #print("i="+str(i)+" "+json.dumps(msg_from_hive_hist[hive]["values"][i]["ts"])+" "+json.dumps(msg_from_hive_hist[1]["values"][i][key]))
     #print("key "+key+" ns "+str(ns)+" r "+str(result))
     if(ns>0):
-        return result/ns
+        return round(result/ns,2)
     else:
         return
 
@@ -368,7 +368,7 @@ def publish_avg(time_frame):
     '''
     for i in range (1,4):
     '''
-    for i in range (2,4):
+    for i in range (1,4):
         print("\n***** Hive "+str(i)+" *****")
         msg_to_TB_hist[i]["values"][value_TB[i]]={}
         key_ind=0
@@ -445,23 +445,23 @@ def set_hive_indicator_light(hive,light):
 def set_hive_indicator_weight(hive,weight):
     print("hive"+str(hive)+" weightIndicator "+str(weight))
     payload={"avweight0":0,"avweight1":0,"avweight2":0}
-    if weight == True:
-        weight_indicator_hive[hive]=1
+    if weight == "1":
+        weight_indicator_hive[int(hive)]=1
         print(payload.keys())
         for key in payload.keys():
             print(key)
-            print(json.dumps(msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key]))
-            if msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key] !="" and  msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key] > weight_th:
+            print(json.dumps(msg_to_TB_hist[int(hive)]["values"][value_TB[int(hive)]-1][key]))
+            if msg_to_TB_hist[int(hive)]["values"][value_TB[int(hive)]-1][key] !="" and  msg_to_TB_hist[int(hive)]["values"][value_TB[int(hive)]-1][key] > weight_th:
                 payload[key]=1
                 print("light on")
         hivegt.publish("hive/"+str(hive)+"/setweightIndicator",json.dumps(payload))
         print("hive"+str(hive)+" weightIndicator "+json.dumps(payload))
-    elif weight == False:
-        weight_indicator_hive[hive]=0
+    elif weight == "0":
+        weight_indicator_hive[int(hive)]=0
         hivegt.publish("hive/"+str(hive)+"/setweightIndicator",json.dumps(payload))
 
 def set_hive_sampling_period(hive,period):
-    sampling_period_hive[hive]=period
+    sampling_period_hive[hive]=int(period)
     print("Sampling Period for Hive"+str(hive)+" = "+str(period))
     hivegt.publish("hive/"+str(hive)+"/setSamplingPeriod",period)
 
@@ -482,7 +482,7 @@ def device_method_listener(device_client):
         ##
         if method_request.name == "set_hive_indicator_light":
             try:
-                set_hive_indicator_light(method_request.payload["hive"], method_request.payload["light"])
+                set_hive_indicator_light(method_request.payload["hive"], method_request.payload["var"])
                 pass
             except ValueError:
                 response_payload = {"Response": "Invalid parameter"}
@@ -491,9 +491,9 @@ def device_method_listener(device_client):
                 response_payload = {"Response": "Executed direct method {}".format(method_request.name)}
                 response_status = 200
         ##
-        if method_request.name == "set_hive_indicator_weight":
+        elif method_request.name == "set_hive_indicator_weight":
             try:
-                set_hive_indicator_weight(method_request.payload["hive"], method_request.payload["weight"])
+                set_hive_indicator_weight(method_request.payload["hive"], method_request.payload["var"])
                 pass
             except ValueError:
                 response_payload = {"Response": "Invalid parameter"}
@@ -502,9 +502,9 @@ def device_method_listener(device_client):
                 response_payload = {"Response": "Executed direct method {}".format(method_request.name)}
                 response_status = 200
         ##
-        if method_request.name == "set_hive_sampling_period":
+        elif method_request.name == "set_hive_sampling_period":
             try:
-                set_hive_sampling_period(method_request.payload["hive"], method_request.payload["period"])
+                set_hive_sampling_period(method_request.payload["hive"], method_request.payload["var"])
                 pass
             except ValueError:
                 response_payload = {"Response": "Invalid parameter"}
@@ -513,9 +513,9 @@ def device_method_listener(device_client):
                 response_payload = {"Response": "Executed direct method {}".format(method_request.name)}
                 response_status = 200
         ##
-        if method_request.name == "set_gt_sampling_period":
+        elif method_request.name == "set_gt_sampling_period":
             try:
-                set_gt_sampling_period(method_request.payload["hive"], method_request.payload["period"])
+                set_gt_sampling_period(method_request.payload["var"])
                 pass
             except ValueError:
                 response_payload = {"Response": "Invalid parameter"}
