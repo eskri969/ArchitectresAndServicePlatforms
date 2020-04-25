@@ -19,7 +19,8 @@ import time
 # Using the Python Device SDK for IoT Hub:
 #   https://github.com/Azure/azure-iot-sdk-python
 # The sample connects to a device-specific MQTT endpoint on your IoT Hub.
-from azure.iot.device import IoTHubDeviceClient, Message
+from azure.iot.device import IoTHubDeviceClient, Message, MethodResponse
+
 
 # The device connection string to authenticate the device with your IoT hub.
 # Using the Azure CLI:
@@ -34,19 +35,29 @@ device3 = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING3)
 ## Old TB
 values_TB_keys=["avtemperatureIn","avtemperatureOut","avhumidityIn","avhumidityOut","avweight0","avweight1","avweight2","avX","avY","avZ","avCO2"]
 notif_TB_keys={"statusTempIn":"avtemperatureIn","statusTempOut":"avtemperatureOut","statusHumIn":"avhumidityIn","statusHumOut":"avhumidityOut","statusCO2":"avCO2"}
+'''
 msg_to_TB_hist = {
     1:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
             "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
-    2:{"values":{0:{"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+    2:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
             "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
     3:{"values":{0:{"ts":0 ,"nsamples": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
+    }
+'''
+msg_to_TB_hist = {
+    1:{"values":{0:{"timestamp": 0 ,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
+    2:{"values":{0:{"timestamp": 0,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
+            "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
+    3:{"values":{0:{"timestamp": 0 ,"avtemperatureIn": 0,"avtemperatureOut": 0,"avhumidityIn": 0,"avhumidityOut": 0,"avweight0": 0,"avweight1": 0,"avweight2": 0,"avX": 0,"avY": 0,"avZ": 0,"avCO2": 0,"lat": 0,"lng":0}},
             "notifications":{0:{"alertTempIn":0,"alertTempOut":0,"alertHumIn":0,"alertHumOut":0,"CO2_alert":0}}},
     }
 value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
 
 ###### PERIOD ######
-gatewaySamplingPeriod=60
+gatewaySamplingPeriod=10
 
 ###Hive MQTTv311
 ## Hive gateway def
@@ -65,7 +76,6 @@ msg_from_hive_hist = {
 value_hive={1:0,2:0,3:0}
 notif_hive={1:0,2:0,3:0}
 sampling_period_hive={1:60,2:60,3:60}
-sampling_period_hive_request={1:0,2:0,3:0}
 light_indicator_hive={1:0,2:0,3:0}
 weight_indicator_hive={1:0,2:0,3:0}
 weight_th=2
@@ -353,16 +363,20 @@ def getLatLng(time_frame,ts,hive):
 
 def publish_avg(time_frame):
     ts=time.time()
+    print(ts)
     global value_TB
     '''
     for i in range (1,4):
     '''
-    for i in range (3,4):
+    for i in range (2,4):
         print("\n***** Hive "+str(i)+" *****")
         msg_to_TB_hist[i]["values"][value_TB[i]]={}
         key_ind=0
-        msg_to_TB_hist[i]["values"][value_TB[i]]["ts"]=ts
-        msg_to_TB_hist[i]["values"][value_TB[i]]["nsamples"]=calculate_ns(time_frame,ts,i)
+        msg_to_TB_hist[i]["values"][value_TB[i]]["timestamp"]=str(datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"))
+
+        #msg_to_TB_hist[i]["values"][value_TB[i]]["nsamples"]=calculate_ns(time_frame,ts,i)
+        calculate_ns(time_frame,ts,i)
+
         while key_ind < len(values_TB_keys):
             avg=calculate_avg(values_hive_keys[key_ind],time_frame,ts,i)
             if avg != None:
@@ -415,10 +429,116 @@ def publish_avg(time_frame):
     for i in range(1,4):
         value_TB[i]+=1
 
+## RPC
+def set_hive_indicator_light(hive,light):
+    if light == True:
+        light=1
+    elif light == False:
+        light=0
+    print("hive"+str(hive)+" lightIndicator "+str(light))
+    hivegt.publish("hive/"+str(hive)+"/setIndicatorLight",light)
+    if light == True:
+        light_indicator_hive[hive]=1
+    elif light == False:
+        light_indicator_hive[hive]=0
+
+def set_hive_indicator_weight(hive,weight):
+    print("hive"+str(hive)+" weightIndicator "+str(weight))
+    payload={"avweight0":0,"avweight1":0,"avweight2":0}
+    if weight == True:
+        weight_indicator_hive[hive]=1
+        print(payload.keys())
+        for key in payload.keys():
+            print(key)
+            print(json.dumps(msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key]))
+            if msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key] !="" and  msg_to_TB_hist[hive]["values"][value_TB[hive]-1][key] > weight_th:
+                payload[key]=1
+                print("light on")
+        hivegt.publish("hive/"+str(hive)+"/setweightIndicator",json.dumps(payload))
+        print("hive"+str(hive)+" weightIndicator "+json.dumps(payload))
+    elif weight == False:
+        weight_indicator_hive[hive]=0
+        hivegt.publish("hive/"+str(hive)+"/setweightIndicator",json.dumps(payload))
+
+def set_hive_sampling_period(hive,period):
+    sampling_period_hive[hive]=period
+    print("Sampling Period for Hive"+str(hive)+" = "+str(period))
+    hivegt.publish("hive/"+str(hive)+"/setSamplingPeriod",period)
+
+def set_gt_sampling_period(period):
+    global gatewaySamplingPeriod
+    gatewaySamplingPeriod=float(period)
+    print("GtPeriod "+str(gatewaySamplingPeriod))
+
+def device_method_listener(device_client):
+    while True:
+        method_request = device_client.receive_method_request()
+        print (
+            "\nMethod callback called with:\nmethodName = {method_name}\npayload = {payload}".format(
+                method_name=method_request.name,
+                payload=method_request.payload
+            )
+        )
+        ##
+        if method_request.name == "set_hive_indicator_light":
+            try:
+                set_hive_indicator_light(method_request.payload["hive"], method_request.payload["light"])
+                pass
+            except ValueError:
+                response_payload = {"Response": "Invalid parameter"}
+                response_status = 400
+            else:
+                response_payload = {"Response": "Executed direct method {}".format(method_request.name)}
+                response_status = 200
+        ##
+        if method_request.name == "set_hive_indicator_weight":
+            try:
+                set_hive_indicator_weight(method_request.payload["hive"], method_request.payload["weight"])
+                pass
+            except ValueError:
+                response_payload = {"Response": "Invalid parameter"}
+                response_status = 400
+            else:
+                response_payload = {"Response": "Executed direct method {}".format(method_request.name)}
+                response_status = 200
+        ##
+        if method_request.name == "set_hive_sampling_period":
+            try:
+                set_hive_sampling_period(method_request.payload["hive"], method_request.payload["period"])
+                pass
+            except ValueError:
+                response_payload = {"Response": "Invalid parameter"}
+                response_status = 400
+            else:
+                response_payload = {"Response": "Executed direct method {}".format(method_request.name)}
+                response_status = 200
+        ##
+        if method_request.name == "set_gt_sampling_period":
+            try:
+                set_gt_sampling_period(method_request.payload["hive"], method_request.payload["period"])
+                pass
+            except ValueError:
+                response_payload = {"Response": "Invalid parameter"}
+                response_status = 400
+            else:
+                response_payload = {"Response": "Executed direct method {}".format(method_request.name)}
+                response_status = 200
+
+        else:
+            response_payload = {"Response": "Direct method {} not defined".format(method_request.name)}
+            response_status = 404
+
+        method_response = MethodResponse(method_request.request_id, response_status, payload=response_payload)
+        device_client.send_method_response(method_response)
+####
 
 ## Main initialization and thread
 if __name__ == "__main__":
     try:
+        # Start a thread to listen
+        device_method_thread = threading.Thread(target=device_method_listener, args=(device3,))
+        device_method_thread.daemon = True
+        device_method_thread.start()
         start_hive_gt()
         #Azure connect
         print("all Connected")

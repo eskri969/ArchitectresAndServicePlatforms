@@ -53,28 +53,26 @@ if __name__ == "__main__":
         print("init")
         while True:
             i+=1
-            '''
-            temperatureIn+=1
-            temperatureOut+=1
-            humidityIn+=1
-            humidityOut+=1
-            #weight0+=1
-            #weight1+=1
-            #weight2+=1
-            weight0=25
-            weight1=25
-            weight2=25
-            X+=1
-            Y+=1
-            Z+=1
-            CO2+=1
-            '''
+            temperatureIn = random.randint(0, 100)
+            temperatureOut = random.randint(0, 100)
+            humidityIn=random.randint(0, 100)
+            humidityOut = random.randint(0, 100)
+            weight0 = random.randint(0, 100)
+            weight1 = random.randint(0, 100)
+            weight2 = random.randint(0, 100)
+            weight0 = random.randint(0, 100)
+            weight1 = random.randint(0, 100)
+            weight2 = random.randint(0, 100)
+            X = random.randint(0, 100)
+            Y = random.randint(0, 100)
+            Z = random.randint(0, 100)
+            CO2 = random.randint(0, 100)
             msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureOut)+",\"humidityIn\":"+str(humidityIn)+",\"humidityOut\":"+str(humidityOut)+",\"weight0\":"+str(weight0)+",\"weight1\":"+str(weight1)+",\"weight2\":"+str(weight2)+",\"X\":"+str(X)+",\"Y\":"+str(Y)+",\"Z\":"+str(Z)+",\"CO2\":"+str(CO2)+"}"
             print("send"+str(i))
-            client.publish(topic_pub1, msg)
+            #client.publish(topic_pub1, msg)
             client.publish(topic_pub2, msg)
             client.publish(topic_pub3, msg)
-            time.sleep(15)
+            time.sleep(1)
     except KeyboardInterrupt:
         pass
     except Exception as e:
