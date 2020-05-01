@@ -27,7 +27,7 @@ from azure.iot.device import IoTHubDeviceClient, Message, MethodResponse
 # az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyNodeDevice --output table
 CONNECTION_STRING1 = "HostName=IoTHubCloud.azure-devices.net;DeviceId=MyDevice1;SharedAccessKey=FBPcxJdDzsncJpc4M6yXauqjhW4hMqECxsp4HdqG8WA="
 CONNECTION_STRING2 = "HostName=IoTHubCloud.azure-devices.net;DeviceId=MyDevice2;SharedAccessKey=dpFEacEfBnIa2k7jHcXmWwHSHYoJY4IiyQ+n5ecYLRk="
-CONNECTION_STRING3 = "HostName=IoTHubCloud.azure-devices.net;DeviceId=MyDevice3;SharedAccessKey=KzenEzM1JpzprgH8L+xzTTIuHoZhA2uU3j4O6I+xDNk="
+CONNECTION_STRING3 = "HostName=IoTHubCloud.azure-devices.net;DeviceId=MyDevice3;SharedAccessKey=i8qV22VV8uPQwTfkEqiQgsIfpoxerrY92W6DYxwdDOs="
 device1 = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING1)
 device2 = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING2)
 device3 = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING3)
@@ -57,7 +57,7 @@ value_TB={1:0,2:0,3:0}
 notif_TB={1:0,2:0,3:0}
 
 ###### PERIOD ######
-gatewaySamplingPeriod=20
+gatewaySamplingPeriod=10
 
 ###Hive MQTTv311
 ## Hive gateway def
@@ -415,6 +415,10 @@ def publish_avg(time_frame):
                 check_avgs(i)
                 if location != None:
                     msg_to_TB_hist[i]["values"][value_TB[i]].update(location)
+
+                msg_to_TB_hist[i]["values"][value_TB[i]]["avX"]=round(random.uniform(-0.2, 0.2),2)
+                msg_to_TB_hist[i]["values"][value_TB[i]]["avY"]=round(random.uniform(-0.2, 0.2),2)
+                msg_to_TB_hist[i]["values"][value_TB[i]]["avZ"]=round(random.uniform(0.8, 0.92),2)
                 msg_send=msg_to_TB_hist[i]["values"][value_TB[i]]
                 #msg_send.update(getHiveNotif(time_frame,ts,i))
                 print("DEVICE3 SENDING\n"+json.dumps(msg_send))

@@ -44,12 +44,12 @@ int16_t AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ;
 
 // WiFi
 // Make sure to update this for your own WiFi network!
-const char* ssid = "California";
+const char* ssid = "CentralPerk";
 const char* wifi_password = "@gmail.com";
 
 // MQTT
 // Make sure to update this for your own MQTT Broker!
-const char* mqtt_server = "10.42.0.1";
+const char* mqtt_server = "192.168.0.128";
 ///GeneralTopics
 const char* hive_telemetry = "hive/3/telemetry";
 const char* hive_alert = "hive/3/alert";
@@ -87,8 +87,8 @@ float temperatureOut=0;
 float humidityIn=0;
 float humidityOut=0;
 float weigth0=0;
-float weigth1=0;
-float weigth2=0;
+float weigth1=1;
+float weigth2=2;
 float X=0;
 float Y=0;
 float Z=0;
@@ -97,7 +97,7 @@ float lat=40.388875;
 float lng=-3.628660;
 //Timers
 void sendTelemetry();
-Ticker timer1(sendTelemetry,60000, 0, MILLIS);
+Ticker timer1(sendTelemetry,5000, 0, MILLIS);
 //HW declarations
 int lightIndicator = 14;
 int weigthIndicator1 = 12;
@@ -206,9 +206,10 @@ void read_dht(){
 
 void sendTelemetry(){
   Serial.printf("Sending %d\n",n);
-  weigth0=random(0,5);
-  weigth1=random(0,5);
-  weigth2=random(0,5);
+  weigth0+=(float)(random(0,50))/100;
+  weigth1+=(float)(random(0,50))/100;
+  weigth2+=(float)(random(0,50))/100;
+  Serial.printf("Sending %f %f %f\n",weigth0,weigth1,weigth2);
   co2=random(0,80);
   read_dht();
   if(!read_acc()){
@@ -265,6 +266,15 @@ void sendTelemetry(){
   n++;
   if (client.publish(hive_telemetry, msg)) {
       Serial.println("hive_telemetry sent");
+  }
+  if (weigth0 > 4.5){
+    weigth0 = 0;
+  }
+  if (weigth1 > 4.5){
+    weigth1 = 0;
+  }
+  if (weigth2 > 4.5){
+    weigth2 = 0;
   }
 }
 
