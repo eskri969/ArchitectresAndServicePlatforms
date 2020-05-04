@@ -96,7 +96,7 @@ if __name__ == "__main__":
             Z = random.uniform(0.8, 0.92)
             CO2 = random.uniform(60, 80)
             msg="{\"temperatureIn\":"+str(temperatureIn)+",\"temperatureOut\":"+str(temperatureOut)+",\"humidityIn\":"+str(humidityIn)+",\"humidityOut\":"+str(humidityOut)+",\"weight0\":"+str(weight02)+",\"weight1\":"+str(weight12)+",\"weight2\":"+str(weight22)+",\"X\":"+str(X)+",\"Y\":"+str(Y)+",\"Z\":"+str(Z)+",\"CO2\":"+str(CO2)+"}"
-            print("2send"+str(i))
+            #print("2send"+str(i))
             #client.publish(topic_pub3, msg)
             if weight01 > 4.5:
                 weight01 = 0

@@ -41,7 +41,7 @@ def iothub_devicemethod_sample_run():
         response = registry_manager.invoke_device_method(DEVICE_ID, deviceMethod)
 
         print ( "" )
-        print ( sys.argv )
+        #print ( sys.argv )
         print ( "Device Method called" )
         print ( "Device Method name       : {0}".format(METHOD_NAME) )
         print ( "Device Method payload    : {0}".format(METHOD_PAYLOAD) )

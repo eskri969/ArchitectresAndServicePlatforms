@@ -98,7 +98,7 @@ def on_connect(client, userdata, flags, rc):
     hivegt.subscribe("hive/+/telemetry")
 
 def on_message(client, userdata, msg):
-    print("NEW MSG -> "+msg.topic+" "+str(msg.payload.decode('UTF-8')))
+    print("NEW MSG -> "+msg.topic+" "+str(msg.payload.decode('UTF-8'))+"\n")
     msg_dict=json.loads(msg.payload.decode('UTF-8'))
     global value_hive
     if "hive/1" in msg.topic:
@@ -547,9 +547,11 @@ if __name__ == "__main__":
         #Azure connect
         print("all Connected")
         while True:
+            print("\n************************************************************************************************************")
             print("PERIOD DONE -> "+str(datetime.datetime.now()))
             publish_avg(gatewaySamplingPeriod)
             print("NEXT IN -> "+str(gatewaySamplingPeriod))
+            print("************************************************************************************************************\n")
             time.sleep(gatewaySamplingPeriod)
     except KeyboardInterrupt:
         pass
